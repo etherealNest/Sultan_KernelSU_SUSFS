@@ -215,9 +215,9 @@ jobs:
 #          make -j$(nproc --all)
 
       - name: Build the Kernel
-        working-directory: kernel_source # Убедитесь, что это корень исходников
         run: |
           set -e
+          cd "$CONFIG"
           echo "Starting kernel build for shusky..."
           # Запускаем официальный скрипт сборки для устройства
           ./google-devices/shusky/build_shusky.sh
