@@ -72,7 +72,7 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
-          git clone https://github.com/KernelSU-Next/kernel_patches/
+          git clone https://github.com/KernelSU-Next/kernel_patches/ next_patches
       
       - name: Add KernelSU
         run: |
@@ -94,7 +94,7 @@ jobs:
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
           cd KernelSU-Next
-          patch -p1 --fuzz=3 < ../../kernel_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
+          patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
 
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
