@@ -95,6 +95,7 @@ jobs:
 
           cd KernelSU-Next
           patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
+          cd ..
 
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
