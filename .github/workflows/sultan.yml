@@ -79,7 +79,7 @@ jobs:
           cd "$CONFIG"
           
           echo "Adding KernelSU..."
-          curl -LSs "https://raw.githubusercontent.com/WildKernels/Wild_KSU/wild/kernel/setup.sh" | bash -s wild
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
 
       - name: Apply SUSFS Patches
         run: |
@@ -93,35 +93,17 @@ jobs:
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
-          cd ./Wild_KSU
-          
-          echo "Applying wild SUSFS patches..."
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-
-          echo "Applying wild SUSFS Fix patches..."
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.11/fix_core_hook.c.patch ./
-          patch -p1 --forward < fix_core_hook.c.patch
-
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.11/fix_sucompat.c.patch ./
-          patch -p1 --forward < fix_sucompat.c.patch
-
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.11/fix_kernel_compat.c.patch ./
-          patch -p1 --forward < fix_kernel_compat.c.patch
-          
-          # Change to common directory and apply SUSFS patch
-          cd ..
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
           patch -p1 --fuzz=3 < sys.c_fix.patch
 
-      - name: Apply KSU Hooks
-        run: |
-          echo "Changing to configuration directory: $CONFIG..."
-          cd "$CONFIG"
-          # Apply additional patch
-          cp ../kernel_patches/wild/hooks/syscall_hooks.patch ./
-          patch -p1 -F 3 < syscall_hooks.patch
+#      - name: Apply KSU Hooks
+#        run: |
+#          echo "Changing to configuration directory: $CONFIG..."
+#          cd "$CONFIG"
+#          # Apply additional patch
+#          cp ../kernel_patches/wild/hooks/syscall_hooks.patch ./
+#          patch -p1 -F 3 < syscall_hooks.patch
 
       - name: Add SUSFS Configuration Settings
         run: |
@@ -129,53 +111,83 @@ jobs:
           cd "$CONFIG"
           
           echo "Adding configuration settings to ${{ inputs.codename }}_defconfig..."
+          DEFCONFIG_PATH="./arch/arm64/configs/${{ inputs.codename }}_defconfig"
 
           # Add KSU configuration settings
-          echo "CONFIG_KSU=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
+          echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_MANUAL_HOOK is not set" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KPM=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KALLSYMS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KALLSYMS_ALL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
           
-          # Add SUSFS configuration settings
-          echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
+          # Mountify Support
+          echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${DEFCONFIG_PATH}"
           
-          # Add additional tmpfs config setting
-          echo "CONFIG_TMPFS_XATTR=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_TMPFS_POSIX_ACL=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-
-          # Add additional config setting
-          echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-
-          # Add BBR Config
-          echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig 
-          echo "CONFIG_TCP_CONG_BBR=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_NET_SCH_FQ=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_TCP_CONG_BIC=n" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          echo "CONFIG_TCP_CONG_HTCP=n" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-
-      - name: Run sed and perl Commands
-        run: |
-          echo "Changing to configuration directory: $CONFIG..."
-          cd "$CONFIG"
+          # Networking Configuration
+          echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${DEFCONFIG_PATH}"
           
-          echo "Running sed commands..."
-          sed -i 's/CONFIG_LOCALVERSION="-Sultan"/CONFIG_LOCALVERSION="-Sultan-Wild"/' ./arch/arm64/configs/${{ inputs.codename }}_defconfig
+          # BBR TCP Congestion Control
+          echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_BIC=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_WESTWOOD=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_TCP_CONG_HTCP=n" >> "${DEFCONFIG_PATH}"
+          
+          # IPSet support
+          echo "CONFIG_IP_SET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_MAX=256" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_BITMAP_PORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
+
+          # SUSFS Configuration
+          echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+          
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          
+          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
+          
+          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_SU=y" >> "${DEFCONFIG_PATH}"
+
+          echo "Showing updated defconfig:"
+          cat "${DEFCONFIG_PATH}"
+
+          # Удаление проверки defconfig
+          sed -i 's/check_defconfig//' ./build.config.gki
+
+#      - name: Run sed and perl Commands
+#        run: |
+#          echo "Changing to configuration directory: $CONFIG..."
+#          cd "$CONFIG"
+#          
+#          echo "Running sed commands..."
+#          sed -i 's/CONFIG_LOCALVERSION="-Sultan"/CONFIG_LOCALVERSION="-Sultan-Wild"/' ./arch/arm64/configs/${{ inputs.codename }}_defconfig
 
       - name: Build the Kernel
         run: |
