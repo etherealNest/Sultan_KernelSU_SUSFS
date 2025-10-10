@@ -77,10 +77,11 @@ jobs:
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
-          git clone https://github.com/etherealNest/SukiSU-Ultra.git KernelSU
+
+          git clone -b susfs-main https://github.com/etherealNest/SukiSU-Ultra.git KernelSU
           
           echo "Adding KernelSU..."
-          curl -LSs "https://raw.githubusercontent.com/etherealNest/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
+          bash KernelSU/kernel/setup.sh susfs-main
 
       - name: Apply SUSFS Patches
         run: |
