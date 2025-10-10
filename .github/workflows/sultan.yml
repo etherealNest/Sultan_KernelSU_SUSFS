@@ -37,7 +37,7 @@ jobs:
       #    verbose: 'true'                # Enable detailed logging
           
       - name: Install Build Dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget unzip jq libelf-dev libssl-dev build-essential lz4 aarch64-linux-gnu-gcc
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
 
 #      - name: Download and extract GCC 14.2.0 toolchain
 #        run: |
