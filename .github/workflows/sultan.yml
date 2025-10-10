@@ -220,7 +220,7 @@ jobs:
           cd "$CONFIG"
           echo "Starting kernel build for shusky..."
           # Запускаем официальный скрипт сборки для устройства
-          ./google-devices/shusky/build_shusky.sh
+          ./google-devices/zuma/build_zuma.sh
 
       - name: Copy Images
         run: |
