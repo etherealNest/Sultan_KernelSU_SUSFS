@@ -200,6 +200,7 @@ jobs:
           cd "$CONFIG"
           
           echo 'CFLAGS_open.o := -Wno-attributes' >> fs/Makefile
+          echo 'CFLAGS_stat.o := -Wno-attributes' >> fs/Makefile
           cat fs/Makefile
 
           make zuma_defconfig
