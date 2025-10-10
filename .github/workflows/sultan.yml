@@ -197,11 +197,21 @@ jobs:
 #      - name: Start VS Code if fail build
 #        uses: fawazahmed0/action-debug-vscode@main
 
+      - name: Name Kernel Stock
+        run: |
+          cd "$CONFIG"
+          #Убираю надпись dirty
+          sed -i "s/printf '%s' -dirty/printf '%s'/" scripts/setlocalversion
+          sed -i 's/android_release=/android_release="android14-6.1"/' scripts/setlocalversion
+          sed -i 's/# CONFIG_LOCALVERSION_AUTO is not set/CONFIG_LOCALVERSION_AUTO=y/' arch/arm64/configs/${{ inputs.codename }}_defconfig
+          sed -i '/CONFIG_LOCALVERSION="-Sultan"/d' arch/arm64/configs/${{ inputs.codename }}_defconfig
+
       - name: Build the Kernel
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
           
+          # Отключаю формирование фатальной ошибки при замечаниях.
           echo "# CONFIG_WERROR is not set" >> "./arch/arm64/configs/${{ inputs.codename }}_defconfig"
 
           #make zuma_defconfig
@@ -225,19 +235,48 @@ jobs:
             cat ./out/google-devices/zumapro/dts/*.dtb > ../AnyKernel3/dtb
           fi
 
+      - name: Create boot.img
+        run: |
+          MAGISKBOOT=$GITHUB_WORKSPACE/Prebuilds/magiskboot
+          BOOTIMG=$GITHUB_WORKSPACE/Prebuilds/boot.img
+          VENDOR=$GITHUB_WORKSPACE/Prebuilds/vendor_kernel_boot.img
+          TMP_DIR=tmp_dir
+          mkdir tmp_dir
+
+          unzip $GITHUB_WORKSPACE/Prebuilds/stock_img_shusky.zip $GITHUB_WORKSPACE/Prebuilds/
+
+          cp $CONFIG/out/arch/arm64/boot/Image.lz4 .
+          cat $CONFIG/out/google-devices/zuma/dts/*.dtb > dtb
+          
+          cd tmp_dir
+          "$MAGISKBOOT" unpack "$BOOTIMG"
+          cp ../Image.lz4 kernel
+          "$MAGISKBOOT" repack "$BOOTIMG" ../boot_A16.img
+          rm -rf ./*
+          "$MAGISKBOOT" unpack "$VENDOR"
+          cp ../dtb dtb
+          "$MAGISKBOOT" repack "$VENDOR" ../vendor_kernel_boot_A16.img
+
       - name: Create ZIP Files for Different Formats
         run: |
           echo "Navigating to AnyKernel3 directory..."
           cd ./AnyKernel3
 
           # Zip the files in the AnyKernel3 directory with a new naming convention
-          ZIP_NAME="${{ inputs.codename }}_A16_Sultan_WKSU_SUSFS.zip"
+          ZIP_NAME="${{ inputs.codename }}_A16.zip"
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
           
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-${{ inputs.codename }}
+          name: AK3-${{ inputs.codename }}
           path: |
             *.zip
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flashable-img-${{ inputs.codename }}
+          path: |
+            *.img
