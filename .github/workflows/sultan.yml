@@ -36,18 +36,18 @@ jobs:
       #    remove-cached-tools: 'false'   # Avoid unless confirmed safe
       #    verbose: 'true'                # Enable detailed logging
           
-      - name: Install Build Dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
+#      - name: Install Build Dependencies
+#        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
 
-#      - name: Download and extract GCC 14.2.0 toolchain
-#        run: |
-#          echo "Downloading GCC 14.2.0 cross-compiler toolchain..."
-#          wget https://www.kernel.org/pub/tools/crosstool/files/bin/x86_64/14.2.0/x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
-#          echo "Extracting .gz file..."
-#          gunzip x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
-#          echo "Extracting .tar file..."
-#          tar -xf x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar
-#          echo "GCC 14.2.0 toolchain extracted successfully"
+      - name: Download and extract GCC 14.2.0 toolchain
+        run: |
+          echo "Downloading GCC 14.2.0 cross-compiler toolchain..."
+          wget https://www.kernel.org/pub/tools/crosstool/files/bin/x86_64/14.2.0/x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
+          echo "Extracting .gz file..."
+          gunzip x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
+          echo "Extracting .tar file..."
+          tar -xf x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar
+          echo "GCC 14.2.0 toolchain extracted successfully"
 
       - name: Set CONFIG Environment Variable
         run: |
@@ -166,7 +166,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
+
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
@@ -194,8 +194,8 @@ jobs:
 #          echo "Running sed commands..."
 #          sed -i 's/CONFIG_LOCALVERSION="-Sultan"/CONFIG_LOCALVERSION="-Sultan-Wild"/' ./arch/arm64/configs/${{ inputs.codename }}_defconfig
 
-      - name: Start VS Code if fail build
-        uses: fawazahmed0/action-debug-vscode@main
+#      - name: Start VS Code if fail build
+#        uses: fawazahmed0/action-debug-vscode@main
 
       - name: Build the Kernel
         run: |
@@ -204,10 +204,10 @@ jobs:
           
           echo "# CONFIG_WERROR is not set" >> "./arch/arm64/configs/${{ inputs.codename }}_defconfig"
 
-          make zuma_defconfig
-          make -j$(nproc --all)
-          #make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all) ${{ inputs.codename }}_defconfig
-          #make KBUILD_CFLAGS="-Wno-attributes" CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all)
+          #make zuma_defconfig
+          #make -j$(nproc --all)
+          make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all) ${{ inputs.codename }}_defconfig
+          make KBUILD_CFLAGS="-Wno-attributes" CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all)
 
       - name: Copy Images
         run: |
