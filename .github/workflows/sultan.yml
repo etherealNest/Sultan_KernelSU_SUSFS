@@ -166,7 +166,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-          
+          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
@@ -202,9 +202,7 @@ jobs:
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
           
-          echo 'CFLAGS_open.o := -Wno-attributes' >> fs/Makefile
-          echo 'CFLAGS_stat.o := -Wno-attributes' >> fs/Makefile
-          cat fs/Makefile
+          echo "# CONFIG_WERROR is not set" >> "./arch/arm64/configs/${{ inputs.codename }}_defconfig"
 
           make zuma_defconfig
           make -j$(nproc --all)
