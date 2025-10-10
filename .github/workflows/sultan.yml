@@ -199,6 +199,9 @@ jobs:
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
           
+          echo 'CFLAGS_open.o := -Wno-attributes' >> fs/Makefile
+          cat fs/Makefile
+
           make zuma_defconfig
           make -j$(nproc --all)
           #make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all) ${{ inputs.codename }}_defconfig
