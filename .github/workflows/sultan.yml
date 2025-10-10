@@ -105,6 +105,14 @@ jobs:
 #          cp ../kernel_patches/wild/hooks/syscall_hooks.patch ./
 #          patch -p1 -F 3 < syscall_hooks.patch
 
+      - name: Add BBG
+        run: |
+          cd "$CONFIG"
+          echo "Adding BBG..."
+          wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
+          echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
+          sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/landlock/landlock,baseband_guard/ } }' security/Kconfig
+
       - name: Add SUSFS Configuration Settings
         run: |
           echo "Changing to configuration directory: $CONFIG..."
