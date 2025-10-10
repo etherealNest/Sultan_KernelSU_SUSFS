@@ -205,22 +205,14 @@ jobs:
 #          make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all) ${{ inputs.codename }}_defconfig
 #          make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all)
 
-#      - name: Build the Kernel
-#        run: |
-#          echo "Changing to configuration directory: $CONFIG..."
-#          cd "$CONFIG"
-#          
-#          echo "Building the kernel..."
-#          make ${{ inputs.codename }}_defconfig -j$(nproc --all)
-#          make -j$(nproc --all)
-
       - name: Build the Kernel
         run: |
-          set -e
+          echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
-          echo "Starting kernel build for shusky..."
-          # Запускаем официальный скрипт сборки для устройства
-          ./google-devices/zuma/build_zuma.sh
+          
+          echo "Building the kernel..."
+          make ${{ inputs.codename }}_defconfig -j$(nproc --all)
+          make -j$(nproc --all)
 
       - name: Copy Images
         run: |
