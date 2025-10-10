@@ -36,16 +36,18 @@ jobs:
       #    remove-cached-tools: 'false'   # Avoid unless confirmed safe
       #    verbose: 'true'                # Enable detailed logging
           
+      - name: Install Build Dependencies
+        run: sudo apt-get update && sudo apt-get install -y wget unzip jq libelf-dev libssl-dev build-essential lz4 aarch64-linux-gnu-gcc
 
-      - name: Download and extract GCC 14.2.0 toolchain
-        run: |
-          echo "Downloading GCC 14.2.0 cross-compiler toolchain..."
-          wget https://www.kernel.org/pub/tools/crosstool/files/bin/x86_64/14.2.0/x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
-          echo "Extracting .gz file..."
-          gunzip x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
-          echo "Extracting .tar file..."
-          tar -xf x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar
-          echo "GCC 14.2.0 toolchain extracted successfully"
+#      - name: Download and extract GCC 14.2.0 toolchain
+#        run: |
+#          echo "Downloading GCC 14.2.0 cross-compiler toolchain..."
+#          wget https://www.kernel.org/pub/tools/crosstool/files/bin/x86_64/14.2.0/x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
+#          echo "Extracting .gz file..."
+#          gunzip x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar.gz
+#          echo "Extracting .tar file..."
+#          tar -xf x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar
+#          echo "GCC 14.2.0 toolchain extracted successfully"
 
       - name: Set CONFIG Environment Variable
         run: |
