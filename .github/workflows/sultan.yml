@@ -72,16 +72,14 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
+          git clone https://github.com/KernelSU-Next/kernel_patches/
       
       - name: Add KernelSU
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
-
-          git clone -b susfs-main https://github.com/etherealNest/SukiSU-Ultra.git KernelSU
-          
           echo "Adding KernelSU..."
-          bash KernelSU/kernel/setup.sh susfs-main
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 
       - name: Apply SUSFS Patches
         run: |
@@ -95,17 +93,12 @@ jobs:
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
+          cd KernelSU-Next
+          patch -p1 --fuzz=3 < ../../kernel_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
+
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
           patch -p1 --fuzz=3 < sys.c_fix.patch
-
-#      - name: Apply KSU Hooks
-#        run: |
-#          echo "Changing to configuration directory: $CONFIG..."
-#          cd "$CONFIG"
-#          # Apply additional patch
-#          cp ../kernel_patches/wild/hooks/syscall_hooks.patch ./
-#          patch -p1 -F 3 < syscall_hooks.patch
 
       - name: Add BBG
         run: |
@@ -114,6 +107,12 @@ jobs:
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
           echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/landlock/landlock,baseband_guard/ } }' security/Kconfig
+
+      - name: Apply Hooks Patches
+        run: |
+          cd "$CONFIG"
+          cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
+          patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
 
       - name: Add SUSFS Configuration Settings
         run: |
@@ -125,14 +124,7 @@ jobs:
 
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
-          echo "# CONFIG_KSU_MANUAL_HOOK is not set" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KPM=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KALLSYMS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KALLSYMS_ALL=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KPROBES=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_HAVE_KPROBES=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KPROBE_EVENTS=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
           
           # Mountify Support
           echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
@@ -183,7 +175,7 @@ jobs:
           
           echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_SU=y" >> "${DEFCONFIG_PATH}"
+          echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
 
           echo "Showing updated defconfig:"
           cat "${DEFCONFIG_PATH}"
