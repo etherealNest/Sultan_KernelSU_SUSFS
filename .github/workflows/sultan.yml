@@ -77,6 +77,7 @@ jobs:
         run: |
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
+          git clone https://github.com/etherealNest/SukiSU-Ultra.git KernelSU
           
           echo "Adding KernelSU..."
           curl -LSs "https://raw.githubusercontent.com/etherealNest/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
