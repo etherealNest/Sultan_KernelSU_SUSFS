@@ -241,7 +241,7 @@ jobs:
       - name: Create boot.img
         run: |
           set -x
-          MAGISKBOOT=$GITHUB_WORKSPACE/Prebuilds/magiskboot
+          MAGISKBOOT=$GITHUB_WORKSPACE/Prebuilds/magiskboot_v30.2
           chmod +x "$MAGISKBOOT"
           BOOTIMG=$GITHUB_WORKSPACE/Prebuilds/boot.img
           VENDOR=$GITHUB_WORKSPACE/Prebuilds/vendor_kernel_boot.img
