@@ -241,13 +241,14 @@ jobs:
       - name: Create boot.img
         run: |
           MAGISKBOOT=$GITHUB_WORKSPACE/Prebuilds/magiskboot
+          chmod +x "$MAGISKBOOT"
           BOOTIMG=$GITHUB_WORKSPACE/Prebuilds/boot.img
           VENDOR=$GITHUB_WORKSPACE/Prebuilds/vendor_kernel_boot.img
           TMP_DIR=tmp_dir
           mkdir tmp_dir
 
           unzip $GITHUB_WORKSPACE/Prebuilds/stock_img_shusky.zip -d $GITHUB_WORKSPACE/Prebuilds/
-          
+
           cp $CONFIG/out/arch/arm64/boot/Image.lz4 .
           cat $CONFIG/out/google-devices/zuma/dts/*.dtb > dtb
           
