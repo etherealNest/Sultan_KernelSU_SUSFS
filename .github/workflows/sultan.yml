@@ -99,12 +99,52 @@ jobs:
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
           cd KernelSU-Next
-          patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
+          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch .
+          patch -p1 < 10_enable_susfs_for_ksu.patch #|| true
+          # patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
           cd ..
 
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
           patch -p1 --fuzz=3 < sys.c_fix.patch
+
+      - name: Getting KernelSU Version
+        run: |
+          cd "$CONFIG/KernelSU-Next/kernel"
+          BASE_VERSION=10200
+          COMMIT_COUNT=$(/usr/bin/git rev-list --count HEAD)
+          KSU_VERSION=$(expr $COMMIT_COUNT "+" $BASE_VERSION)
+          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+
+      - name: Scan and collect patch rejects
+        if: ${{ always() }}
+        run: |
+          set -e
+          CONFIG_DIR="$CONFIG"
+          REJECTS_DIR="$GITHUB_WORKSPACE/patch-rejects"
+          mkdir -p "$REJECTS_DIR"
+          # Find all .rej files under the configuration directory
+          mapfile -t REJS < <(find "$CONFIG_DIR" -type f -name '*.rej')
+          REJ_COUNT=${#REJS[@]}
+          echo "Found $REJ_COUNT .rej files under $CONFIG_DIR"
+          echo "REJ_COUNT=$REJ_COUNT" >> $GITHUB_ENV
+          if [ "$REJ_COUNT" -gt 0 ]; then
+            for REJ in "${REJS[@]}"; do
+              # Relative path from $CONFIG
+              REL="${REJ#"$CONFIG_DIR"/}"
+              DEST="$REJECTS_DIR/$REL"
+              mkdir -p "$(dirname "$DEST")"
+              cp "$REJ" "$DEST"
+              # Copy the associated original file alongside the .rej
+              ORIG="${REJ%.rej}"
+              if [ -f "$ORIG" ]; then
+                ORIG_DEST="$REJECTS_DIR/${REL%.rej}"
+                mkdir -p "$(dirname "$ORIG_DEST")"
+                cp "$ORIG" "$ORIG_DEST"
+              fi
+              echo "$REL" >> "$REJECTS_DIR/index.txt"
+            done
+          fi
 
       - name: Add BBG
         run: |
@@ -112,7 +152,28 @@ jobs:
           echo "Adding BBG..."
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
           echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/landlock/landlock,baseband_guard/ } }' security/Kconfig
+          
+          # Before sed: Show the original LSM default line for comparison
+          echo "=== Before sed ==="
+          sed -n '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ p }' security/Kconfig
+          
+          # Apply the sed (your original command)
+          sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
+          
+          # After sed: Show the updated LSM default line
+          echo "=== After sed ==="
+          sed -n '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ p }' security/Kconfig
+          
+          # Confirm baseband_guard is now present (should output the line if successful)
+          echo "=== Confirmation: grep for baseband_guard ==="
+          grep "baseband_guard" security/Kconfig || echo "WARNING: baseband_guard not found after sed"
+          
+          # Optional: Show exit status of sed (0 = success)
+          if [ $? -eq 0 ]; then
+            echo "sed command succeeded (exit 0)."
+          else
+            echo "sed command failed (exit $?)."
+          fi
 
       - name: Apply Hooks Patches
         run: |
@@ -256,11 +317,11 @@ jobs:
           cd tmp_dir
           "$MAGISKBOOT" unpack "$BOOTIMG"
           cp ../Image.lz4 kernel
-          "$MAGISKBOOT" repack "$BOOTIMG" ../boot_A16.img
+          "$MAGISKBOOT" repack "$BOOTIMG" ../$KSUVER-sultan-boot.img
           rm -rf ./*
           "$MAGISKBOOT" unpack "$VENDOR"
           cp ../dtb dtb
-          "$MAGISKBOOT" repack "$VENDOR" ../vendor_kernel_boot_A16.img
+          "$MAGISKBOOT" repack "$VENDOR" ../$KSUVERvendor_kernel_boot_A16.img
 
       - name: Create ZIP Files for Different Formats
         run: |
@@ -268,7 +329,7 @@ jobs:
           cd ./AnyKernel3
 
           # Zip the files in the AnyKernel3 directory with a new naming convention
-          ZIP_NAME="${{ inputs.codename }}_A16.zip"
+          ZIP_NAME="$KSUVER-sultan-AK3.zip"
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
           

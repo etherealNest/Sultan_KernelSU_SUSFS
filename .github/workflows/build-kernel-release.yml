@@ -25,9 +25,9 @@ jobs:
       REPO_OWNER: ${{ github.repository_owner }}
       REPO_NAME: Sultan_KernelSU_SUSFS
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      RELEASE_NAME: "Sultan Kernels With KernelSU Next & SUSFS v1.5.11"
+      RELEASE_NAME: "Sultan Kernels With KernelSU Next & SUSFS v1.5.12"
       RELEASE_NOTES: |
-        This release contains KernelSU Next and SUSFS v1.5.11
+        This release contains KernelSU Next and SUSFS v1.5.12
         
         ⚠️ **COMPATIBILITY NOTICE** ⚠️
         Please ensure compatibility by comparing release dates with official Sultan kernel releases
@@ -40,7 +40,7 @@ jobs:
         
         Features:
         [+] KernelSU Next
-        [+] SUSFS v1.5.11
+        [+] SUSFS v1.5.12
         [+] Magic Mount Support
 
     steps:
@@ -52,7 +52,7 @@ jobs:
       - name: Generate and Create New Tag
         run: |
             # Generate a new tag based on the current commit SHA
-            NEW_TAG="v1.5.11-$(git rev-parse --short HEAD)"
+            NEW_TAG="v1.5.12-$(git rev-parse --short HEAD)"
             
             # Output the new tag to be used
             echo "New tag: $NEW_TAG"
