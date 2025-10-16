@@ -22,7 +22,7 @@ jobs:
     needs:
         - build-kernel-zuma
     env:
-      REPO_OWNER: TheWildJames
+      REPO_OWNER: ${{ github.repository_owner }}
       REPO_NAME: Sultan_KernelSU_SUSFS
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RELEASE_NAME: "Sultan Kernels With KernelSU Next & SUSFS v1.5.11"
@@ -36,10 +36,10 @@ jobs:
         -> https://github.com/sidex15/ksu_module_susfs
         
         Managers:
-        -> https://github.com/WildKernels/Wild_KSU and others!
+        -> https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-spoofed/next/Manager.zip!
         
         Features:
-        [+] Wild KSU
+        [+] KernelSU Next
         [+] SUSFS v1.5.11
         [+] Magic Mount Support
 
@@ -51,14 +51,8 @@ jobs:
       # Get the Latest Tag from GitHub
       - name: Generate and Create New Tag
         run: |
-            # Fetch the latest tag from GitHub (this is the latest tag based on the GitHub API)
-            LATEST_TAG=$(gh api repos/$REPO_OWNER/$REPO_NAME/tags --jq '.[0].name')
-            if [ -z "$LATEST_TAG" ]; then
-              LATEST_TAG="v1.5.11-r0"  # Default to v1.5.7-0 if no tag exists
-            fi
-            
-            # Increment the suffix (e.g., v1.5.7-0 becomes v1.5.7-1)
-            NEW_TAG=$(echo "$LATEST_TAG" | awk -F'-r' '{suffix=$2; if (!suffix) suffix=0; suffix++; printf "%s-r%d", $1, suffix}')
+            # Generate a new tag based on the current commit SHA
+            NEW_TAG="v1.5.11-$(git rev-parse --short HEAD)"
             
             # Output the new tag to be used
             echo "New tag: $NEW_TAG"
