@@ -83,7 +83,7 @@ jobs:
       - name: Upload Release Assets Dynamically
         run: |
           # Loop through all files in the downloaded-artifacts directory
-          for file in ./downloaded-artifacts/kernel-*/*; do
+          for file in ./downloaded-artifacts/*/*; do
               # Skip directories
               if [ -d "$file" ]; then
                   continue
