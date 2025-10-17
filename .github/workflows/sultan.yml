@@ -36,8 +36,8 @@ jobs:
       #    remove-cached-tools: 'false'   # Avoid unless confirmed safe
       #    verbose: 'true'                # Enable detailed logging
           
-      - name: Install Build Dependencies
-        run: sudo apt-get update && sudo apt upgrade -y && sudo apt-get install -y lz4
+#      - name: Install Build Dependencies
+#        run: sudo apt-get update && sudo apt upgrade -y && sudo apt-get install -y lz4
 
       - name: Checkout Repository
         uses: actions/checkout@v4
