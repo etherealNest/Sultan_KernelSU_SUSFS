@@ -320,7 +320,7 @@ jobs:
           rm -rf ./*
           "$MAGISKBOOT" unpack "$VENDOR"
           cp ../dtb dtb
-          "$MAGISKBOOT" repack "$VENDOR" ../$KSUVERvendor_kernel_boot_A16.img
+          "$MAGISKBOOT" repack "$VENDOR" ../$KSUVER-vendor_kernel_boot_A16.img
 
       - name: Create ZIP Files for Different Formats
         run: |
