@@ -99,9 +99,7 @@ jobs:
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
           cd KernelSU-Next
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch .
-          patch -p1 < 10_enable_susfs_for_ksu.patch #|| true
-          # patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
+          patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
           cd ..
 
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
