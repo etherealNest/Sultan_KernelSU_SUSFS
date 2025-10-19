@@ -175,10 +175,10 @@ jobs:
           echo "Adding configuration settings to ${{ inputs.codename }}_defconfig..."
           DEFCONFIG_PATH="./arch/arm64/configs/${{ inputs.codename }}_defconfig"
 
-          if [ "${{ inputs.ksu_type }}" == "ksu-next" ] then,
-          cat $GITHUB_WORKSPACE/bash/kernelsu-next >> "${DEFCONFIG_PATH}"
-          elif [ "${{ inputs.ksu_type }}" == "suki-su" ] then,
-          cat $GITHUB_WORKSPACE/bash/suki-su >> "${DEFCONFIG_PATH}"
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+            cat $GITHUB_WORKSPACE/bash/kernelsu-next >> "${DEFCONFIG_PATH}"
+          elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
+            cat $GITHUB_WORKSPACE/bash/suki-su >> "${DEFCONFIG_PATH}"
           fi
 
           # Mountify Support
