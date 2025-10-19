@@ -182,6 +182,9 @@ jobs:
           echo "Adding configuration settings to ${{ inputs.codename }}_defconfig..."
           DEFCONFIG_PATH="./arch/arm64/configs/${{ inputs.codename }}_defconfig"
 
+          # Spec
+          echo "CONFIG_COMPAT=y" >> "${DEFCONFIG_PATH}"
+
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_DEBUG=n" >> "${DEFCONFIG_PATH}"
