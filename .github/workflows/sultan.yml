@@ -307,13 +307,13 @@ jobs:
       - name: Upload AK3.zip
         uses: actions/upload-artifact@v4
         with:
-          name: AK3-${{ inputs.codename }}
+          name: AK3-${{ inputs.codename }}-${{ inputs.ksu_type }}
           path: |
             *.zip
 
       - name: Upload img's
         uses: actions/upload-artifact@v4
         with:
-          name: flashable-img-${{ inputs.codename }}
+          name: flashable-img-${{ inputs.codename }}-${{ inputs.ksu_type }}
           path: |
             *.img
