@@ -84,7 +84,7 @@ jobs:
           echo "Changing to configuration directory: $CONFIG..."
           cd "$CONFIG"
           echo "Adding KernelSU..."
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
 
       - name: Apply SUSFS Patches
         run: |
@@ -98,32 +98,14 @@ jobs:
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
-          cd KernelSU-Next
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch .
-          patch -p1 < 10_enable_susfs_for_ksu.patch || true
-
-          echo "  Fixing apllying previous SUSFS patches"
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
-          patch -p1 < fix_core_hook.c.patch
-
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
-          patch -p1 < fix_sucompat.c.patch
-
-          cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
-          patch -p1 < fix_kernel_compat.c.patch
-
-          # patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
-          cd ..
-          echo "  fertig"
-
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
           patch -p1 --fuzz=3 < sys.c_fix.patch
 
       - name: Getting KernelSU Version
         run: |
-          cd "$CONFIG/KernelSU-Next/kernel"
-          BASE_VERSION=10200
+          cd "$CONFIG/KernelSU/kernel"
+          BASE_VERSION=10700
           COMMIT_COUNT=$(/usr/bin/git rev-list --count HEAD)
           KSU_VERSION=$(expr $COMMIT_COUNT "+" $BASE_VERSION)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
@@ -202,7 +184,16 @@ jobs:
 
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> "${DEFCONFIG_PATH}"
-          echo "# CONFIG_KSU_KPROBES_HOOK is not set" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_DEBUG=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_MULTI_MANAGER_SUPPORT=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_THRONE_TRACKER_LEGACY=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_MANUAL_SU=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_ALLOWLIST_WORKAROUND=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_CMDLINE=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KPM=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_KPROBES_HOOK=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_TRACEPOINT_HOOK=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_MANUAL_HOOK=y" >> "${DEFCONFIG_PATH}"
           
           # Mountify Support
           echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
@@ -238,22 +229,21 @@ jobs:
 
           # SUSFS Configuration
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
+          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          
           echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
-          
+          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"      
           echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-          echo "# CONFIG_KSU_SUSFS_SUS_SU is not set" >> "${DEFCONFIG_PATH}"
+          echo "KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
 
           echo "Showing updated defconfig:"
           cat "${DEFCONFIG_PATH}"
