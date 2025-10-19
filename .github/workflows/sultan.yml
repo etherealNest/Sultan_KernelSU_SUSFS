@@ -68,7 +68,6 @@ jobs:
       - name: Add KSU
         run: |
           cd "$CONFIG"
-          echo "  Adding KernelSU..."
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             echo "Adding KernelSU..."
             curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
@@ -289,7 +288,7 @@ jobs:
           mkdir tmp_dir
 
           BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-boot.img"
-          VENDOR_BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-vendor_kernel_boot.img
+          VENDOR_BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-vendor_kernel_boot.img"
 
           unzip $GITHUB_WORKSPACE/Prebuilds/stock_img_shusky.zip -d $GITHUB_WORKSPACE/Prebuilds/
 

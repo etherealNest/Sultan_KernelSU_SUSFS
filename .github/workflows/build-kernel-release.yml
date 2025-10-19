@@ -90,23 +90,29 @@ jobs:
       REPO_OWNER: ${{ github.repository_owner }}
       REPO_NAME: Sultan_KernelSU_SUSFS
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      RELEASE_NAME: "Sultan Kernels With KernelSU Next & SUSFS v1.5.12"
-      RELEASE_NOTES: |
-        This release contains KernelSU Next and SUSFS v1.5.12
-        
+      RELEASE_NAME: "Sultan Kernels With KernelSU Next and SukiSU Ultra & SUSFS v1.5.12"
+      RELEASE_NOTES: |       
         ⚠️ **COMPATIBILITY NOTICE** ⚠️
         Please ensure compatibility by comparing release dates with official Sultan kernel releases
         
         Module: 
         -> https://github.com/sidex15/ksu_module_susfs
         
-        Managers:
-        -> https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-spoofed/next/Manager.zip!
+        Managers (nightly builds):
+        -> KernelSU Next manager Spoofed: https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-spoofed/next/Manager.zip!
+        -> SukiSU Ultra manager: https://nightly.link/SukiSU-Ultra/SukiSU-Ultra/workflows/build-manager/main/manager.zip
+
+        KernelFlasher for AnyKernel3.zip:
+          -> https://github.com/fatalcoder524/KernelFlasher/tree/v1.6.0
         
         Features:
-        [+] KernelSU Next
+        [+] There are two options to choose from:
+          -> SukiSU Ultra 
+          -> KernelSU Next
         [+] SUSFS v1.5.12
-        [+] Magic Mount Support
+        [+] Built-in Baseband-guard
+        [+] Built-in Manual hooks
+        [+] Magic Mount
 
     steps:
       # Checkout the code
