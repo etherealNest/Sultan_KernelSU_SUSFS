@@ -161,6 +161,16 @@ jobs:
             grep "baseband_guard" security/Kconfig
           fi
 
+      - name: Apply Module Check Bypass
+        run: |
+          if [[ "${{ inputs.kernel_version }}" == "6.1" || "${{ inputs.kernel_version }}" == "6.6" ]]; then
+            cd "$CONFIG/kernel/module"
+            sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' version.c
+          else
+            cd "$CONFIG/kernel"
+            sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' module.c
+          fi
+
       - name: Apply Hooks Patches
         run: |
           cd "$CONFIG"
@@ -181,15 +191,18 @@ jobs:
           fi
 
           # Mountify Support
+          echo "# Mountify Support" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_TMPFS_XATTR=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_TMPFS_POSIX_ACL=y" >> "${DEFCONFIG_PATH}"
           
           # Networking Configuration
+          echo "# Networking Configuration" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP6_NF_TARGET_HL=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP6_NF_MATCH_HL=y" >> "${DEFCONFIG_PATH}"
           
           # BBR TCP Congestion Control
+          echo "# BBR TCP Congestion Control" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_TCP_CONG_ADVANCED=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_TCP_CONG_BBR=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_NET_SCH_FQ=y" >> "${DEFCONFIG_PATH}"
@@ -198,19 +211,25 @@ jobs:
           echo "CONFIG_TCP_CONG_HTCP=n" >> "${DEFCONFIG_PATH}"
           
           # IPSet support
+          echo "# IPSet Support" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_IP_SET_MAX=256" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_MAX=65534" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_BITMAP_IP=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_BITMAP_PORT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_IP=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPMARK=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_IPPORT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_IPMAC=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_MAC=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_HASH_NETPORTNET=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NET=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NETNET=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NETPORT=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_IP_SET_LIST_SET=y" >> "${DEFCONFIG_PATH}"
 
           # SUSFS Configuration
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
