@@ -49,6 +49,7 @@ on:
         options:
           - ksu-next
           - suki-su
+          - 5ec1cff
         default: 'ksu-next'
       create_release:
         description: 'Create a release after matrix build?'
@@ -71,7 +72,7 @@ jobs:
     if: github.event.inputs.run_type == 'matrix'
     strategy:
       matrix:
-        ksu_type: [ksu-next, suki-su]
+        ksu_type: [ksu-next, suki-su, 5ec1cff]
     uses: ./.github/workflows/sultan.yml
     secrets: inherit
     with:
@@ -98,10 +99,6 @@ jobs:
         Module: 
         -> https://github.com/sidex15/ksu_module_susfs
         
-        Managers (nightly builds):
-        -> KernelSU Next manager Spoofed: https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-spoofed/next/Manager.zip!
-        -> SukiSU Ultra manager: https://nightly.link/SukiSU-Ultra/SukiSU-Ultra/workflows/build-manager/main/manager.zip
-
         KernelFlasher for AnyKernel3.zip:
           -> https://github.com/fatalcoder524/KernelFlasher/tree/v1.6.0
         
@@ -109,6 +106,7 @@ jobs:
         [+] There are two options to choose from:
           -> SukiSU Ultra 
           -> KernelSU Next
+          -> 5ec1cff
         [+] SUSFS v1.5.12
         [+] Built-in Baseband-guard
         [+] Built-in Manual hooks

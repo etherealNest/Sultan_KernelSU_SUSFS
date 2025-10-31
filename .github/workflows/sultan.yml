@@ -74,6 +74,9 @@ jobs:
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             echo "  Adding Suki-SU..."
             curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
+          elif 
+            echo "  Adding 5ec1cff..."
+            curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
           fi 
 
       - name: Apply SUSFS Patches
@@ -84,12 +87,13 @@ jobs:
           
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
+          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+          cp ../kernel_patches/sultan/sys.c_fix.patch ./
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd KernelSU-Next
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch .
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
 
             echo "  Fixing apllying previous SUSFS patches"
@@ -108,8 +112,14 @@ jobs:
           fi
 
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
-          cp ../kernel_patches/sultan/sys.c_fix.patch ./
+          echo "  Применение патча sys.c после применения патча SUSFS к ядру..."
           patch -p1 --fuzz=3 < sys.c_fix.patch
+
+          if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            echo "  Применение патча SUSFS к KernelSU..."
+            cd KernelSU
+            patch -p1 < 10_enable_susfs_for_ksu.patch
+          fi
 
       - name: Getting KernelSU Version
         run: |
@@ -121,6 +131,10 @@ jobs:
             cd "$CONFIG/KernelSU/kernel"
             BASE_VERSION=10700
             COMMIT_COUNT=$(/usr/bin/git rev-list --count origin/HEAD)
+          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            cd "$CONFIG/KernelSU/kernel"
+            BASE_VERSION=10200
+            COMMIT_COUNT=$(/usr/bin/git rev-list --count HEAD)
           fi
           KSU_VERSION=$(expr $COMMIT_COUNT "+" $BASE_VERSION)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
@@ -139,37 +153,7 @@ jobs:
           echo "Adding BBG..."
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
           echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
-          
-          # Before sed: Show the original LSM default line for comparison
-          echo "=== Before sed ==="
-          sed -n '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ p }' security/Kconfig
-          
-          # Apply the sed command to add baseband_guard to default security configurations
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
-          
-          # After sed: Show the updated LSM default line
-          echo "=== After sed ==="
-          sed -n '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ p }' security/Kconfig
-          
-          # Confirm baseband_guard is now present (should output the line if successful)
-          echo "=== Confirmation: grep for baseband_guard ==="
-          if ! grep -q "baseband_guard" security/Kconfig; then
-            echo "ERROR: baseband_guard not found after sed - stopping workflow"
-            exit 1
-          else
-            echo "SUCCESS: baseband_guard found in security configuration"
-            grep "baseband_guard" security/Kconfig
-          fi
-
-      - name: Apply Module Check Bypass
-        run: |
-          if [[ "${{ inputs.kernel_version }}" == "6.1" || "${{ inputs.kernel_version }}" == "6.6" ]]; then
-            cd "$CONFIG/kernel/module"
-            sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' version.c
-          else
-            cd "$CONFIG/kernel"
-            sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' module.c
-          fi
 
       - name: Apply Hooks Patches
         run: |
@@ -188,6 +172,8 @@ jobs:
             cat $GITHUB_WORKSPACE/bash/kernelsu-next >> "${DEFCONFIG_PATH}"
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             cat $GITHUB_WORKSPACE/bash/suki-su >> "${DEFCONFIG_PATH}"
+          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            cat $GITHUB_WORKSPACE/bash/5ec1cff >> "${DEFCONFIG_PATH}"
           fi
 
           # Mountify Support
