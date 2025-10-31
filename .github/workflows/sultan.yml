@@ -74,7 +74,7 @@ jobs:
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             echo "  Adding Suki-SU..."
             curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
-          elif 
+          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             echo "  Adding 5ec1cff..."
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
           fi
