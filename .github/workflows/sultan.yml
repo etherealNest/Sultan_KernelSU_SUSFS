@@ -67,17 +67,6 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
-
-      - name: Getting sha256sum
-        run: |
-          cd "$CONFIG"
-          sha256sum drivers/input/input.c
-          sha256sum fs/devpts/inode.c
-          sha256sum fs/exec.c
-          sha256sum fs/namespace.c
-          sha256sum fs/open.c
-          sha256sum fs/read_write.c
-          sha256sum fs/stat.c
       
       - name: Add KSU
         run: |
@@ -221,27 +210,16 @@ jobs:
           echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
 
-      - name: Getting sha256sum
-        run: |
-          cd "$CONFIG"
-          sha256sum drivers/input/input.c
-          sha256sum fs/devpts/inode.c
-          sha256sum fs/exec.c
-          sha256sum fs/namespace.c
-          sha256sum fs/open.c
-          sha256sum fs/read_write.c
-          sha256sum fs/stat.c
-
       - name: Apply Hooks Patches
         run: |
           cd "$CONFIG"
           if [[ "${{ inputs.ksu_type }}" == "ksu-next" || "${{ inputs.ksu_type }}" == "suki-su" ]]; then
             cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
             patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
-          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-            cp ../patch/manual_hooks_ksu.patch ./
-            patch -p1 < manual_hooks_ksu.patch
           fi
+          #elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+          #  cp ../patch/manual_hooks_ksu.patch ./
+          #  patch -p1 < manual_hooks_ksu.patch
 
       - name: Add SUSFS Configuration Settings
         run: |
