@@ -1,150 +1,115 @@
-diff --git a/drivers/input/input.c b/drivers/input/input.c
-index 78be582b5766d..dcc83954802d8 100644
---- a/drivers/input/input.c
-+++ b/drivers/input/input.c
-@@ -387,6 +387,10 @@ static void input_event_dispose(struct input_dev *dev, int disposition,
- 	}
- }
- 
-+#ifdef CONFIG_KSU
-+extern bool ksu_input_hook __read_mostly;
-+extern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);
-+#endif
- void input_handle_event(struct input_dev *dev,
- 			unsigned int type, unsigned int code, int value)
- {
-@@ -395,6 +399,10 @@ void input_handle_event(struct input_dev *dev,
- 	lockdep_assert_held(&dev->event_lock);
- 
- 	disposition = input_get_disposition(dev, type, code, &value);
-+#ifdef CONFIG_KSU
-+	if (unlikely(ksu_input_hook))
-+		ksu_handle_input_handle_event(&type, &code, &value);
-+#endif
- 	if (disposition != INPUT_IGNORE_EVENT) {
- 		if (type != EV_SYN)
- 			add_input_randomness(type, code, value);
-diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
-index 4f25015aa5342..991156e7e50de 100644
---- a/fs/devpts/inode.c
-+++ b/fs/devpts/inode.c
-@@ -602,8 +602,14 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
-  *
-  * Returns whatever was passed as priv in devpts_pty_new for a given inode.
-  */
-+#ifdef CONFIG_KSU
-+extern int ksu_handle_devpts(struct inode*);
-+#endif
- void *devpts_get_priv(struct dentry *dentry)
- {
-+#ifdef CONFIG_KSU
-+	ksu_handle_devpts(dentry->d_inode);
-+#endif
- 	if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
- 		return NULL;
- 	return dentry->d_fsdata;
-diff --git a/fs/exec.c b/fs/exec.c
-index 2f0d83b68164c..aa6e166e3549b 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1918,11 +1918,24 @@ static int bprm_execve(struct linux_binprm *bprm,
- 	return retval;
- }
- 
-+#ifdef CONFIG_KSU
-+extern bool ksu_execveat_hook __read_mostly;
-+extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
-+			void *envp, int *flags);
-+extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
-+				 void *argv, void *envp, int *flags);
-+#endif
- static int do_execveat_common(int fd, struct filename *filename,
- 			      struct user_arg_ptr argv,
- 			      struct user_arg_ptr envp,
- 			      int flags)
- {
-+#ifdef CONFIG_KSU
-+	if (unlikely(ksu_execveat_hook))
-+		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
-+	else
-+		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
-+#endif
- 	struct linux_binprm *bprm;
- 	int retval;
- 
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 59a9f877738b2..83bed32fb0079 100644
+index 177d5babab04c..27dce47de7e5d 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
-@@ -1778,6 +1778,8 @@ static int can_umount(const struct path *path, int flags)
+@@ -2014,22 +2014,27 @@ static int can_umount(const struct path *path, int flags)
+ 	return 0;
+ }
+ 
+-// caller is responsible for flags being sane
+ int path_umount(struct path *path, int flags)
  {
  	struct mount *mnt = real_mount(path->mnt);
+ 	int ret;
  
-+	if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))
-+		return -EINVAL;
- 	if (!may_mount())
- 		return -EPERM;
- 	if (path->dentry != path->mnt->mnt_root)
-diff --git a/fs/open.c b/fs/open.c
-index 0894b354bd0ee..dc9335222b359 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -418,8 +418,15 @@ static const struct cred *access_override_creds(void)
- 	return old_cred;
+ 	ret = can_umount(path, flags);
+-	if (!ret)
+-		ret = do_umount(mnt, flags);
++	if (ret)
++		return ret;
+ 
+-	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
+-	dput(path->dentry);
+-	mntput_no_expire(mnt);
+-	return ret;
++	if (flags & MNT_DETACH)
++		return mnt_make_expired(NULL, mnt);
++	else
++		return do_umount(mnt, flags);
  }
  
-+#ifdef CONFIG_KSU
-+extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
-+			 int *flags);
-+#endif
- static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
++long do_sys_mount(const char __user *dev_name, const char __user *dir_name,
++		  const char __user *type_page, unsigned long flags,
++		  void __user *data_page)
++{
++
++
+ static int ksys_umount(char __user *name, int flags)
  {
-+#ifdef CONFIG_KSU
-+	ksu_handle_faccessat(&dfd, &filename, &mode, &flags);
-+#endif
- 	struct path path;
- 	struct inode *inode;
- 	int res;
+ 	int lookup_flags = LOOKUP_MOUNTPOINT;
 diff --git a/fs/read_write.c b/fs/read_write.c
-index a709aa63a9ebb..819a29d0ee8dc 100644
+index ad58b256d0a53..f8cdc1ce3d3ed 100644
 --- a/fs/read_write.c
 +++ b/fs/read_write.c
-@@ -447,8 +447,17 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
- }
- EXPORT_SYMBOL(kernel_read);
- 
-+#ifdef CONFIG_KSU
-+extern bool ksu_vfs_read_hook __read_mostly;
-+extern int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
-+			size_t *count_ptr, loff_t **pos);
-+#endif
- ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+@@ -451,6 +451,11 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
  {
+ 	ssize_t ret;
+ 
 +#ifdef CONFIG_KSU
 +	if (unlikely(ksu_vfs_read_hook))
 +		ksu_handle_vfs_read(&file, &buf, &count, &pos);
 +#endif
- 	ssize_t ret;
- 
++
  	if (!(file->f_mode & FMODE_READ))
+ 		return -EBADF;
+ 	if (!(file->f_mode & FMODE_CAN_READ))
 diff --git a/fs/stat.c b/fs/stat.c
-index ef50573c72a26..96928856ed443 100644
+index 725c823ff5e18..9c3e77a0b9a16 100644
 --- a/fs/stat.c
 +++ b/fs/stat.c
-@@ -214,9 +214,15 @@ int getname_statx_lookup_flags(int flags)
+@@ -232,46 +232,18 @@ int getname_statx_lookup_flags(int flags)
   *
   * 0 will be returned on success, and a -ve error code if unsuccessful.
   */
 -static int vfs_statx(int dfd, struct filename *filename, int flags,
-+#ifdef CONFIG_KSU
-+extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
-+#endif
-+int vfs_statx(int dfd, struct filename *filename, int flags,
- 	      struct kstat *stat, u32 request_mask)
+-	      struct kstat *stat, u32 request_mask)
++int vfs_statx(int dfd, const char __user *filename, int flags,
++		struct kstat *stat, u32 request_mask)
  {
+-	struct path path;
+-	unsigned int lookup_flags = getname_statx_lookup_flags(flags);
+-	int error;
+-
+-	if (flags & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT | AT_EMPTY_PATH |
+-		      AT_STATX_SYNC_TYPE))
+-		return -EINVAL;
+-
+-retry:
+-	error = filename_lookup(dfd, filename, lookup_flags, &path, NULL);
+-	if (error)
+-		goto out;
+-
+-	error = vfs_getattr(&path, stat, request_mask, flags);
+-
+-	stat->mnt_id = real_mount(path.mnt)->mnt_id;
+-	stat->result_mask |= STATX_MNT_ID;
+-
+-	if (path.mnt->mnt_root == path.dentry)
+-		stat->attributes |= STATX_ATTR_MOUNT_ROOT;
+-	stat->attributes_mask |= STATX_ATTR_MOUNT_ROOT;
+-
+-	/* Handle STATX_DIOALIGN for block devices. */
+-	if (request_mask & STATX_DIOALIGN) {
+-		struct inode *inode = d_backing_inode(path.dentry);
++	int ret;
+ 
+-		if (S_ISBLK(inode->i_mode))
+-			bdev_statx_dioalign(inode, stat);
+-	}
 +#ifdef CONFIG_KSU
-+	ksu_handle_stat(&dfd, &filename->name, &flags);
++	if (unlikely(ksu_stat_hook))
++		ksu_handle_stat(&dfd, &filename, &flags);
 +#endif
- 	struct path path;
- 	unsigned int lookup_flags = getname_statx_lookup_flags(flags);
- 	int error;
+ 
+-	path_put(&path);
+-	if (retry_estale(error, lookup_flags)) {
+-		lookup_flags |= LOOKUP_REVAL;
+-		goto retry;
+-	}
+-out:
+-	return error;
++	ret = vfs_statx_lookup(dfd, filename, flags, stat, request_mask);
++	return ret;
+ }
+ 
+ #ifdef CONFIG_KSU_SUSFS
