@@ -79,10 +79,35 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
           fi
 
-      - name: Applying minimal SUSFS patches only for Shiba (Pixel 8)
-        run: |
-          cd "$CONFIG"
-          
+#      - name: Applying minimal SUSFS patches only for Shiba (Pixel 8)
+#        run: |
+#          cd "$CONFIG"
+#          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
+#          cp ../susfs4ksu/kernel_patches/fs/* ./fs/
+#          cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
+#
+#          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+#            cd KernelSU-Next
+#            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+#            patch -p1 < 10_enable_susfs_for_ksu.patch || true
+#
+#            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
+#            patch -p1 < fix_core_hook.c.patch
+#
+#            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
+#            patch -p1 < fix_sucompat.c.patch
+#
+#            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
+#            patch -p1 < fix_kernel_compat.c.patch
+#            cd..
+#          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+#            cd KernelSU
+#            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+#            patch -p1 < 10_enable_susfs_for_ksu.patch
+#            cd..
+#          fi
+#
+#          patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
 
       - name: Apply Full SUSFS Patches
         run: |
@@ -101,7 +126,6 @@ jobs:
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
 
-            echo "  Fixing apllying previous SUSFS patches"
             cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
             patch -p1 < fix_core_hook.c.patch
 
@@ -110,22 +134,18 @@ jobs:
 
             cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
             patch -p1 < fix_kernel_compat.c.patch
-
-            # patch -p1 --fuzz=3 < ../../next_patches/susfs/android14-6.1-v1.5.11-ksunext-12879.patch
             cd ..
-            echo "  fertig"
+          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            echo "  Применение патча SUSFS к 5ec1cff..."
+            cd KernelSU
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+            patch -p1 < 10_enable_susfs_for_ksu.patch
+            cd ..
           fi
 
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           echo "  Применение патча sys.c после применения патча SUSFS к ядру..."
           patch -p1 --fuzz=3 < sys.c_fix.patch
-
-          if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-            echo "  Применение патча SUSFS к KernelSU..."
-            cd KernelSU
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            patch -p1 < 10_enable_susfs_for_ksu.patch
-          fi
 
       - name: Getting KernelSU Version
         run: |
