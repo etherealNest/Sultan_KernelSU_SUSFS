@@ -93,24 +93,30 @@ jobs:
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd KernelSU-Next
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+            echo "  run 10_enable_susfs_for_ksu.patch with true"
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
 
+            echo "  patch core_hook.c"
             cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
             patch -p1 < fix_core_hook.c.patch
 
+            echo "  patch sucompat.c"
             cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
             patch -p1 < fix_sucompat.c.patch
 
+            echo "  patch kernel_compat.c"
             cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
             patch -p1 < fix_kernel_compat.c.patch
             cd ..
           elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             cd KernelSU
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+            echo "  run 10_enable_susfs_for_ksu.patch"
             patch -p1 < 10_enable_susfs_for_ksu.patch
             cd ..
           fi
 
+          echo "  run 50_add_susfs_in_gki-android14-6.1.patch"
           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
 
           DEFCONFIG_PATH="./arch/arm64/configs/${{ inputs.codename }}_defconfig"
