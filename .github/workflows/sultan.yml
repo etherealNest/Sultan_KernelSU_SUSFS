@@ -67,6 +67,17 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
+
+      - name: Getting sha256sum
+        run: |
+          cd "$CONFIG"
+          sha256sum drivers/input/input.c
+          sha256sum fs/devpts/inode.c
+          sha256sum fs/exec.c
+          sha256sum fs/namespace.c
+          sha256sum fs/open.c
+          sha256sum fs/read_write.c
+          sha256sum fs/stat.c
       
       - name: Add KSU
         run: |
@@ -87,6 +98,7 @@ jobs:
         run: |
           cd "$CONFIG"
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
+          cp ../kernel_patches/sultan/sys.c_fix.patch ./
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
@@ -118,6 +130,8 @@ jobs:
 
           echo "  run 50_add_susfs_in_gki-android14-6.1.patch"
           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
+          echo "  patch sys.c"
+          patch -p1 --fuzz=3 < sys.c_fix.patch
 
           DEFCONFIG_PATH="./arch/arm64/configs/${{ inputs.codename }}_defconfig"
           # SUSFS Configuration
@@ -206,6 +220,17 @@ jobs:
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
           echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
+
+      - name: Getting sha256sum
+        run: |
+          cd "$CONFIG"
+          sha256sum drivers/input/input.c
+          sha256sum fs/devpts/inode.c
+          sha256sum fs/exec.c
+          sha256sum fs/namespace.c
+          sha256sum fs/open.c
+          sha256sum fs/read_write.c
+          sha256sum fs/stat.c
 
       - name: Apply Hooks Patches
         run: |
@@ -382,3 +407,44 @@ jobs:
           name: flashable-img-${{ inputs.codename }}-${{ inputs.ksu_type }}
           path: |
             *.img
+
+      - name: Scan and collect patch rejects
+        if: ${{ always() }}
+        run: |
+          set -e
+          CONFIG_DIR="$CONFIG"
+          REJECTS_DIR="$GITHUB_WORKSPACE/patch-rejects"
+          mkdir -p "$REJECTS_DIR"
+          # Find all .rej files under the configuration directory
+          mapfile -t REJS < <(find "$CONFIG_DIR" -type f -name '*.rej')
+          REJ_COUNT=${#REJS[@]}
+          echo "Found $REJ_COUNT .rej files under $CONFIG_DIR"
+          echo "REJ_COUNT=$REJ_COUNT" >> $GITHUB_ENV
+          if [ "$REJ_COUNT" -gt 0 ]; then
+            for REJ in "${REJS[@]}"; do
+              # Relative path from $CONFIG
+              REL="${REJ#"$CONFIG_DIR"/}"
+              DEST="$REJECTS_DIR/$REL"
+              mkdir -p "$(dirname "$DEST")"
+              cp "$REJ" "$DEST"
+              # Copy the associated original file alongside the .rej
+              ORIG="${REJ%.rej}"
+              if [ -f "$ORIG" ]; then
+                ORIG_DEST="$REJECTS_DIR/${REL%.rej}"
+                mkdir -p "$(dirname "$ORIG_DEST")"
+                cp "$ORIG" "$ORIG_DEST"
+              fi
+              echo "$REL" >> "$REJECTS_DIR/index.txt"
+            done
+          fi
+
+      - name: Extra Artifacts
+        if: ${{ always() }}
+        id: upload_misc
+        uses: actions/upload-artifact@v4
+        with:
+          name: Misc
+          path: |
+            patch-rejects/**
+          if-no-files-found: ignore
+          compression-level: 9
