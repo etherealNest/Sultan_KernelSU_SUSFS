@@ -79,7 +79,12 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
           fi
 
-      - name: Apply SUSFS Patches
+      - name: Applying minimal SUSFS patches only for Shiba (Pixel 8)
+        run: |
+          cd "$CONFIG"
+          
+
+      - name: Apply Full SUSFS Patches
         run: |
           cd "$CONFIG"
           
@@ -87,13 +92,13 @@ jobs:
           
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
           cp ../kernel_patches/sultan/sys.c_fix.patch ./
           cp ../susfs4ksu/kernel_patches/fs/* ./fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
 
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd KernelSU-Next
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
 
             echo "  Fixing apllying previous SUSFS patches"
@@ -118,6 +123,7 @@ jobs:
           if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             echo "  Применение патча SUSFS к KernelSU..."
             cd KernelSU
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 < 10_enable_susfs_for_ksu.patch
           fi
 
