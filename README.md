@@ -1,4 +1,4 @@
-# Wild Kernels for Android
+# ONLY FOR Pixel 8 / 8 Pro
 
 ## Your warranty is no longer valid!
 

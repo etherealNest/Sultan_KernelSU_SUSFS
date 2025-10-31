@@ -77,7 +77,7 @@ jobs:
           elif 
             echo "  Adding 5ec1cff..."
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
-          fi 
+          fi
 
       - name: Apply SUSFS Patches
         run: |
