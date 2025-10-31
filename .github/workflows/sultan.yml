@@ -103,12 +103,12 @@ jobs:
 
             cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
             patch -p1 < fix_kernel_compat.c.patch
-            cd..
+            cd ..
           elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             cd KernelSU
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 < 10_enable_susfs_for_ksu.patch
-            cd..
+            cd ..
           fi
 
           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch
