@@ -327,7 +327,7 @@ jobs:
           cd ./AnyKernel3
 
           # Zip the files in the AnyKernel3 directory with a new naming convention
-          ZIP_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-AnyKernel3.zip"
+          ZIP_NAME="${KERNEL_VER}-${{ inputs.susfs_type }}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-AnyKernel3.zip"
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
 
@@ -341,8 +341,8 @@ jobs:
           TMP_DIR=tmp_dir
           mkdir tmp_dir
 
-          BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-boot.img"
-          VENDOR_BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-vendor_kernel_boot.img"
+          BOOT_NAME="${KERNEL_VER}-${{ inputs.susfs_type }}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-boot.img"
+          VENDOR_BOOT_NAME="${KERNEL_VER}-${{ inputs.susfs_type }}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-vendor_kernel_boot.img"
 
           unzip $GITHUB_WORKSPACE/Prebuilds/stock_img_shusky.zip -d $GITHUB_WORKSPACE/Prebuilds/
 
