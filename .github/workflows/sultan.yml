@@ -83,7 +83,7 @@ jobs:
           fi
 
       - name: Applying minimal SUSFS patches only for Shiba (Pixel 8)
-        if: ${{ inputs.susfs_type }} == minimal_susfs
+        if: ${{ inputs.susfs_type == 'minimal_susfs' }}
         run: |
           cd "$CONFIG"
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
@@ -135,7 +135,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
 
       - name: Apply Full SUSFS Patches
-        if: ${{ inputs.susfs_type }} == full_susfs
+        if: ${{ inputs.susfs_type == 'full_susfs' }}
         run: |
           cd "$CONFIG"
           
