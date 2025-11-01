@@ -51,13 +51,6 @@ on:
           - suki-su
           - 5ec1cff
         default: 'ksu-next'
-      susfs_type:
-        description: 'SUSFS type'
-        required: true
-        type: choice
-        options:
-          - minimal_susfs
-          - full_susfs
       create_release:
         description: 'Create a release after matrix build?'
         required: false
@@ -74,14 +67,12 @@ jobs:
       android_version: ${{ github.event.inputs.android_version }}
       kernel_version: ${{ github.event.inputs.kernel_version }}
       ksu_type: ${{ github.event.inputs.ksu_type }}
-      susfs_type: ${{ github.event.inputs.susfs_type }}
 
   build-kernel-matrix:
     if: github.event.inputs.run_type == 'matrix'
     strategy:
       matrix:
         ksu_type: [ksu-next, 5ec1cff]
-        susfs_type: [minimal_susfs, full_susfs]
     uses: ./.github/workflows/sultan.yml
     secrets: inherit
     with:
@@ -90,7 +81,6 @@ jobs:
       android_version: ${{ github.event.inputs.android_version }}
       kernel_version: ${{ github.event.inputs.kernel_version }}
       ksu_type: ${{ matrix.ksu_type }}
-      susfs_type: ${{ matrix.susfs_type }}
 
   trigger-release:
     if: github.event.inputs.create_release == 'true' && github.event.inputs.run_type == 'matrix'

@@ -21,9 +21,6 @@ on:
       ksu_type:
         required: true
         type: string
-      susfs_type:
-        required: true
-        type: string
   
 jobs:
   build-kernel-sultan-kernelsu-susfs:
@@ -93,63 +90,7 @@ jobs:
             patch -p1 < manual_hooks_ksu.patch
           fi
 
-      - name: Applying minimal SUSFS patches only for Shiba (Pixel 8)
-        if: ${{ inputs.susfs_type == 'minimal_susfs' }}
-        run: |
-          cd "$CONFIG"
-          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./
-          cp ../kernel_patches/sultan/sys.c_fix.patch ./
-          cp ../susfs4ksu/kernel_patches/fs/* ./fs/
-          cp ../susfs4ksu/kernel_patches/include/linux/* ./include/linux/
-
-          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-            cd KernelSU-Next
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            echo "  run 10_enable_susfs_for_ksu.patch with true"
-            patch -p1 < 10_enable_susfs_for_ksu.patch || true
-
-            echo "  patch core_hook.c"
-            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
-            patch -p1 < fix_core_hook.c.patch
-
-            echo "  patch sucompat.c"
-            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
-            patch -p1 < fix_sucompat.c.patch
-
-            echo "  patch kernel_compat.c"
-            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
-            patch -p1 < fix_kernel_compat.c.patch
-            cd ..
-          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-            cd KernelSU
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            echo "  run 10_enable_susfs_for_ksu.patch"
-            patch -p1 < 10_enable_susfs_for_ksu.patch
-            cd ..
-          fi
-
-          echo "  run 50_add_susfs_in_gki-android14-6.1.patch"
-          patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
-          echo "  patch sys.c"
-          patch -p1 --fuzz=3 < sys.c_fix.patch
-
-          DEFCONFIG_PATH="./arch/arm64/configs/${{ inputs.codename }}_defconfig"
-          # SUSFS Configuration
-          echo "# SUSFS Configuration" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
-
-      - name: Apply Full SUSFS Patches
-        if: ${{ inputs.susfs_type == 'full_susfs' }}
+      - name: Apply SUSFS Patches
         run: |
           cd "$CONFIG"
           
@@ -186,11 +127,11 @@ jobs:
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           echo "  Применение патча sys.c после применения патча SUSFS к ядру..."
           patch -p1 --fuzz=3 < sys.c_fix.patch
-          if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-            echo " Применение патча exec.c"
-            cp ../patch/fix_exec.c.patch ./
-            patch -p1 < fix_exec.c.patch
-          fi
+          #if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+          #  echo " Применение патча exec.c"
+          #  cp ../patch/fix_exec.c.patch ./
+          #  patch -p1 < fix_exec.c.patch
+          #fi
 
       - name: Getting KernelSU Version
         run: |
@@ -282,27 +223,25 @@ jobs:
           echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_IP_SET_LIST_SET=y" >> "${DEFCONFIG_PATH}"
 
-          if [ ${{ inputs.susfs_type }} == full_susfs ]; then
           # SUSFS Configuration
-            echo "# SUSFS Configuration" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-            echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"      
-            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
-            echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
-          fi
-          
+          echo "# SUSFS Configuration" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
+          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"      
+          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
+          echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
+        
           echo "  Showing updated defconfig:"
           cat "${DEFCONFIG_PATH}"
 
@@ -346,7 +285,7 @@ jobs:
           cd ./AnyKernel3
 
           # Zip the files in the AnyKernel3 directory with a new naming convention
-          ZIP_NAME="${KERNEL_VER}-${{ inputs.susfs_type }}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-AnyKernel3.zip"
+          ZIP_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-AnyKernel3.zip"
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
 
@@ -360,8 +299,8 @@ jobs:
           TMP_DIR=tmp_dir
           mkdir tmp_dir
 
-          BOOT_NAME="${KERNEL_VER}-${{ inputs.susfs_type }}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-boot.img"
-          VENDOR_BOOT_NAME="${KERNEL_VER}-${{ inputs.susfs_type }}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-vendor_kernel_boot.img"
+          BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-boot.img"
+          VENDOR_BOOT_NAME="${KERNEL_VER}-${{ inputs.codename }}-${{ inputs.ksu_type }}-v$KSUVER-vendor_kernel_boot.img"
 
           unzip $GITHUB_WORKSPACE/Prebuilds/stock_img_shusky.zip -d $GITHUB_WORKSPACE/Prebuilds/
 
@@ -380,14 +319,14 @@ jobs:
       - name: Upload AK3.zip
         uses: actions/upload-artifact@v4
         with:
-          name: AK3-${{ inputs.codename }}-${{ inputs.ksu_type }}-${{ inputs.susfs_type }}
+          name: AK3-${{ inputs.codename }}-${{ inputs.ksu_type }}
           path: |
             *.zip
 
       - name: Upload img's
         uses: actions/upload-artifact@v4
         with:
-          name: flashable-img-${{ inputs.codename }}-${{ inputs.ksu_type }}-${{ inputs.susfs_type }}
+          name: flashable-img-${{ inputs.codename }}-${{ inputs.ksu_type }}
           path: |
             *.img
 
@@ -426,7 +365,7 @@ jobs:
         id: upload_misc
         uses: actions/upload-artifact@v4
         with:
-          name: Misc-${{ inputs.codename }}-${{ inputs.ksu_type }}-${{ inputs.susfs_type }}
+          name: Misc-${{ inputs.codename }}-${{ inputs.ksu_type }}
           path: |
             patch-rejects/**
           if-no-files-found: ignore
