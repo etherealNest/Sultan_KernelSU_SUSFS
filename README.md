@@ -1,5 +1,4 @@
 # ONLY FOR Pixel 8 / 8 Pro
-# Minimal SUSFS only for SHIBA (Pixel 8).
 
 ## Your warranty is no longer valid!
 

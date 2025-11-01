@@ -97,7 +97,7 @@ jobs:
         Please ensure compatibility by comparing release dates with official Sultan kernel releases
         
         Module: 
-        -> https://github.com/sidex15/ksu_module_susfs
+          -> https://github.com/sidex15/ksu_module_susfs
         
         KernelFlasher for AnyKernel3.zip:
           -> https://github.com/fatalcoder524/KernelFlasher/tree/v1.6.0
@@ -111,8 +111,6 @@ jobs:
         [+] Built-in Baseband-guard
         [+] Built-in Manual hooks
         [+] Magic Mount
-
-        # Minimal SUSFS only for SHIBA (Pixel 8).
     steps:
       # Checkout the code
       - name: Checkout code
@@ -138,6 +136,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./downloaded-artifacts
+          pattern: |
+            AK3-*
+            flashable-img-*
 
       # Create GitHub Release and upload files if make_release is true
       - name: Create GitHub Release
@@ -158,9 +159,13 @@ jobs:
                   continue
               fi
 
-              # Upload the file to the GitHub release
-              echo "Uploading $file..."
-              gh release upload ${{ env.NEW_TAG }} "$file"
+              # Check if file has .zip or .img extension
+              if [[ "$file" == *.zip ]] || [[ "$file" == *.img ]]; then
+                  echo "Uploading $file..."
+                  gh release upload ${{ env.NEW_TAG }} "$file"
+              else
+                  echo "Skipping $file (not a .zip or .img file)"
+              fi
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
