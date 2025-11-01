@@ -82,6 +82,17 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
           fi
 
+      - name: Apply Hooks Patches
+        run: |
+          cd "$CONFIG"
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+            cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
+            patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
+          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            cp ../patch/manual_hooks_ksu.patch ./
+            patch -p1 < manual_hooks_ksu.patch
+          fi
+
       - name: Applying minimal SUSFS patches only for Shiba (Pixel 8)
         if: ${{ inputs.susfs_type == 'minimal_susfs' }}
         run: |
@@ -209,17 +220,6 @@ jobs:
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
           echo "CONFIG_BBG=y" >> ./arch/arm64/configs/${{ inputs.codename }}_defconfig
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
-
-      - name: Apply Hooks Patches
-        run: |
-          cd "$CONFIG"
-          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-            cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
-            patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
-          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-            cp ../patch/manual_hooks_ksu.patch ./
-            patch -p1 < manual_hooks_ksu.patch
-          fi
 
       - name: Add SUSFS Configuration Settings
         run: |
@@ -421,7 +421,7 @@ jobs:
         id: upload_misc
         uses: actions/upload-artifact@v4
         with:
-          name: Misc
+          name: Misc-${{ inputs.codename }}-${{ inputs.ksu_type }}-${{ inputs.susfs_type }}
           path: |
             patch-rejects/**
           if-no-files-found: ignore

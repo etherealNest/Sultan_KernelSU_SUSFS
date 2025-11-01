@@ -25,6 +25,65 @@ index 78be582b5766d..341fa54e082d5 100644
  	if (disposition != INPUT_IGNORE_EVENT) {
  		if (type != EV_SYN)
  			add_input_randomness(type, code, value);
+diff --git a/fs/exec.c b/fs/exec.c
+index 2f0d83b68164c..29e5eb3a44714 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1918,6 +1918,13 @@ static int bprm_execve(struct linux_binprm *bprm,
+ 	return retval;
+ }
+ 
++#ifdef CONFIG_KSU
++extern bool ksu_execveat_hook __read_mostly;
++extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
++			void *envp, int *flags);
++extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
++				void *argv, void *envp, int *flags);
++#endif
+ static int do_execveat_common(int fd, struct filename *filename,
+ 			      struct user_arg_ptr argv,
+ 			      struct user_arg_ptr envp,
+@@ -1929,6 +1936,13 @@ static int do_execveat_common(int fd, struct filename *filename,
+ 	if (IS_ERR(filename))
+ 		return PTR_ERR(filename);
+ 
++	#ifdef CONFIG_KSU
++	if (unlikely(ksu_execveat_hook))
++		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
++	else
++		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
++	#endif
++
+ 	/*
+ 	 * We move the actual failure in case of RLIMIT_NPROC excess from
+ 	 * set*uid() to execve() because too many poorly written programs
+diff --git a/fs/open.c b/fs/open.c
+index 0894b354bd0ee..3c5ba544a544b 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -355,6 +355,11 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
+ 	return ksys_fallocate(fd, mode, offset, len);
+ }
+ 
++#ifdef CONFIG_KSU
++extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
++			int *flags);
++#endif
++
+ #if defined(CONFIG_COMPAT) && defined(__ARCH_WANT_COMPAT_FALLOCATE)
+ COMPAT_SYSCALL_DEFINE6(fallocate, int, fd, int, mode, compat_arg_u64_dual(offset),
+ 		       compat_arg_u64_dual(len))
+@@ -426,6 +431,10 @@ static long do_faccessat(int dfd, const char __user *filename, int mode, int fla
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+ 	const struct cred *old_cred = NULL;
+ 
++	#ifdef CONFIG_KSU
++	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
++	#endif
++
+ 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
+ 		return -EINVAL;
+ 
 diff --git a/fs/read_write.c b/fs/read_write.c
 index a709aa63a9ebb..e2f59208d4861 100644
 --- a/fs/read_write.c
@@ -48,3 +107,29 @@ index a709aa63a9ebb..e2f59208d4861 100644
  
  	if (!(file->f_mode & FMODE_READ))
  		return -EBADF;
+diff --git a/fs/stat.c b/fs/stat.c
+index ef50573c72a26..8cc9c1ed599a9 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -256,6 +256,10 @@ static int vfs_statx(int dfd, struct filename *filename, int flags,
+ 	return error;
+ }
+ 
++#ifdef CONFIG_KSU
++extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
++#endif
++
+ int vfs_fstatat(int dfd, const char __user *filename,
+ 			      struct kstat *stat, int flags)
+ {
+@@ -263,6 +267,10 @@ int vfs_fstatat(int dfd, const char __user *filename,
+ 	int statx_flags = flags | AT_NO_AUTOMOUNT;
+ 	struct filename *name;
+ 
++	#ifdef CONFIG_KSU
++	ksu_handle_stat(&dfd, &filename, &flags);
++	#endif
++
+ 	name = getname_flags(filename, getname_statx_lookup_flags(statx_flags), NULL);
+ 	ret = vfs_statx(dfd, name, statx_flags, stat, STATX_BASIC_STATS);
+ 	putname(name);
