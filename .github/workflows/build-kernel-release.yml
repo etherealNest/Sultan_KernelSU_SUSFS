@@ -136,9 +136,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./downloaded-artifacts
-          pattern: |
-            AK3-*
-            flashable-img-*
 
       # Create GitHub Release and upload files if make_release is true
       - name: Create GitHub Release
@@ -175,4 +172,4 @@ jobs:
       - name: Display Files Uploaded
         run: |
           echo "GitHub release created with the following files:"
-          ls ./downloaded-artifacts/**/*
+          ls -R ./downloaded-artifacts/
