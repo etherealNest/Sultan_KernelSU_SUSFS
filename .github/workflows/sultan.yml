@@ -188,7 +188,7 @@ jobs:
           patch -p1 --fuzz=3 < sys.c_fix.patch
           if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             echo " Применение патча exec.c"
-            cp ../patch/fix_exec.c.patch
+            cp ../patch/fix_exec.c.patch ./
             patch -p1 < fix_exec.c.patch
           fi
 
