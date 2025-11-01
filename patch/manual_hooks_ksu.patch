@@ -25,31 +25,6 @@ index 78be582b5766d..341fa54e082d5 100644
  	if (disposition != INPUT_IGNORE_EVENT) {
  		if (type != EV_SYN)
  			add_input_randomness(type, code, value);
-diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
-index 4f25015aa5342..721ab0259e457 100644
---- a/fs/devpts/inode.c
-+++ b/fs/devpts/inode.c
-@@ -596,6 +596,10 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
- 	return dentry;
- }
- 
-+#ifdef CONFIG_KSU
-+extern int ksu_handle_devpts(struct inode*);
-+#endif
-+
- /**
-  * devpts_get_priv -- get private data for a slave
-  * @pts_inode: inode of the slave
-@@ -604,6 +608,9 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
-  */
- void *devpts_get_priv(struct dentry *dentry)
- {
-+	#ifdef CONFIG_KSU
-+	ksu_handle_devpts(dentry->d_inode);
-+	#endif
- 	if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)
- 		return NULL;
- 	return dentry->d_fsdata;
 diff --git a/fs/exec.c b/fs/exec.c
 index 2f0d83b68164c..29e5eb3a44714 100644
 --- a/fs/exec.c
