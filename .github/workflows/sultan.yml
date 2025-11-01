@@ -186,6 +186,11 @@ jobs:
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           echo "  Применение патча sys.c после применения патча SUSFS к ядру..."
           patch -p1 --fuzz=3 < sys.c_fix.patch
+          if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            echo " Применение патча exec.c"
+            cp ../patch/fix_exec.c.patch
+            patch -p1 < fix_exec.c.patch
+          fi
 
       - name: Getting KernelSU Version
         run: |
