@@ -121,6 +121,8 @@ jobs:
             cd KernelSU
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 < 10_enable_susfs_for_ksu.patch
+            cp ../../patch/fix_apk_sign.c.patch ./
+            patch -p1 < fix_apk_sign.c.patch
             cd ..
           fi
 
