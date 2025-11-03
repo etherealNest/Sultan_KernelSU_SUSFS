@@ -152,9 +152,10 @@ jobs:
                      -e 's/^\(#define EXPECTED_HASH_NEKO\s\+\).*/\1"a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af"/' \
                      kernel/manager_sign.h
           elif [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-           cd "$CONFIG/KernelSU-Next"
-           cp ../../patch/fix_apk_sign.c.ksu-next.patch ./
+            cd "$CONFIG/KernelSU-Next"
+            cp ../../patch/fix_apk_sign.c.ksu-next.patch ./
            patch -p1 < fix_apk_sign.c.ksu-next.patch
+          fi
 
       - name: Getting KernelSU Version
         run: |
