@@ -1,0 +1,14 @@
+diff --git a/kernel/apk_sign.c b/kernel/apk_sign.c
+index c1e803d7..1e8f98e6 100644
+--- a/kernel/apk_sign.c
++++ b/kernel/apk_sign.c
+@@ -385,7 +385,8 @@
+ 
+ 	// set debug info to print size and hash to kernel log
+ 	pr_info("%s: expected size: %u, expected hash: %s\n",
+ 		path, expected_manager_size, expected_manager_hash);
+ 
+-	return check_v2_signature(path, expected_manager_size, expected_manager_hash);
++	return check_v2_signature(path, expected_manager_size, expected_manager_hash)
++		|| check_v2_signature(path, 916, "a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af");
+ }

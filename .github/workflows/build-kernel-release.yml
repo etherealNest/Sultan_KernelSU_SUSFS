@@ -72,7 +72,7 @@ jobs:
     if: github.event.inputs.run_type == 'matrix'
     strategy:
       matrix:
-        ksu_type: [ksu-next, 5ec1cff]
+        ksu_type: [ksu-next, 5ec1cff, suki-su]
     uses: ./.github/workflows/sultan.yml
     secrets: inherit
     with:

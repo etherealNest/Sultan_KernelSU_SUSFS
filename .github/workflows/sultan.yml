@@ -82,7 +82,7 @@ jobs:
       - name: Apply Hooks Patches
         run: |
           cd "$CONFIG"
-          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+          if [[ "${{ inputs.ksu_type }}" == "ksu-next" || "${{ inputs.ksu_type }}" == "suki-su" ]]; then
             cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
             echo "  ➡️ Применение scope_min_manual_hooks_v1.4.patch"
             patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
@@ -127,9 +127,6 @@ jobs:
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
             patch -p1 < 10_enable_susfs_for_ksu.patch
-            echo "  🔧 Добавляем свою собственную подпись патчем 10_enable_susfs_for_ksu.patch"
-            cp ../../patch/fix_apk_sign.c.patch ./
-            patch -p1 < fix_apk_sign.c.patch
             cd ..
           fi
 
@@ -142,6 +139,22 @@ jobs:
           #  cp ../patch/fix_exec.c.patch ./
           #  patch -p1 < fix_exec.c.patch
           #fi
+
+      - name: Adding your own signature
+        run: |
+          if [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+            cd "$CONFIG/KernelSU"
+            cp ../../patch/fix_apk_sign.c.5ec1cff.patch ./
+            patch -p1 < fix_apk_sign.c.5ec1cff.patch
+          elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
+            cd "$CONFIG/KernelSU"
+            sed -i -e 's/^\(#define EXPECTED_SIZE_NEKO\s\+\).*/\1916/' \
+                     -e 's/^\(#define EXPECTED_HASH_NEKO\s\+\).*/\1"a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af"/' \
+                     kernel/manager_sign.h
+          elif [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+           cd "$CONFIG/KernelSU-Next"
+           cp ../../patch/fix_apk_sign.c.ksu-next.patch ./
+           patch -p1 < fix_apk_sign.c.ksu-next.patch
 
       - name: Getting KernelSU Version
         run: |
