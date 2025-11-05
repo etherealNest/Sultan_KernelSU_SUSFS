@@ -71,6 +71,7 @@ jobs:
   build-kernel-matrix:
     if: github.event.inputs.run_type == 'matrix'
     strategy:
+      fail-fast: false
       matrix:
         ksu_type: [ksu-next, 5ec1cff, suki-su]
     uses: ./.github/workflows/sultan.yml
