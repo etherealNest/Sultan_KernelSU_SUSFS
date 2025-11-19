@@ -80,7 +80,7 @@ jobs:
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
       
           cd susfs4ksu
-          COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0" ;;
+          COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0"
           git checkout "$COMMIT"
 
       - name: Add KSU
