@@ -79,6 +79,10 @@ jobs:
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
       
+          cd susfs4ksu
+          android14-6.1) COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0" ;;
+          git checkout "$COMMIT"
+
       - name: Add KSU
         run: |
           cd "$CONFIG"
