@@ -78,10 +78,12 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
-      
-          cd susfs4ksu
-          COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0"
-          git checkout "$COMMIT"
+
+          if [ "${{ inputs.ksu_type }}" != "suki-su" ]; then
+            cd susfs4ksu
+            COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0"
+            git checkout "$COMMIT"
+          fi
 
       - name: Add KSU
         run: |
