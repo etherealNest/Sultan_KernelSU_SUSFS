@@ -102,7 +102,7 @@ jobs:
       - name: Apply Hooks Patches
         run: |
           cd "$CONFIG"
-          if [[ "${{ inputs.ksu_type }}" == "ksu-next" || "${{ inputs.ksu_type }}" == "suki-su" ]]; then
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
             echo "  ➡️ Применение scope_min_manual_hooks_v1.4.patch"
             patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
@@ -110,6 +110,8 @@ jobs:
             cp ../patch/manual_hooks_ksu.patch ./
             echo "  ➡️ Применение manual_hooks_ksu.patch"
             patch -p1 < manual_hooks_ksu.patch
+          elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
+            echo "Пропуск добавления хуков ядра."
           fi
 
       - name: Apply SUSFS Patches
