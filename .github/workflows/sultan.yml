@@ -106,11 +106,11 @@ jobs:
             cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
             echo "  ➡️ Применение scope_min_manual_hooks_v1.4.patch"
             patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
-          elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-            cp ../patch/manual_hooks_ksu.patch ./
-            echo "  ➡️ Применение manual_hooks_ksu.patch"
-            patch -p1 < manual_hooks_ksu.patch
-          elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
+          # elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+          #   cp ../patch/manual_hooks_ksu.patch ./
+          #   echo "  ➡️ Применение manual_hooks_ksu.patch"
+          #   patch -p1 < manual_hooks_ksu.patch
+          elif [[ "${{ inputs.ksu_type }}" == "suki-su" || "${{ inputs.ksu_type }}" == "5ec1cff" ]]; then
             echo "Пропуск добавления хуков ядра."
           fi
 
@@ -273,21 +273,21 @@ jobs:
           # SUSFS Configuration
           echo "# SUSFS Configuration" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"      
-          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
+          # echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> "${DEFCONFIG_PATH}"      
+          # echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
+          # echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> "${DEFCONFIG_PATH}"
         
           echo "  👁️ Showing updated defconfig:"
           cat "${DEFCONFIG_PATH}"
