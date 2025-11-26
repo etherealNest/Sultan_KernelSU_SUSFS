@@ -273,7 +273,7 @@ jobs:
           # SUSFS Configuration
           echo "# SUSFS Configuration" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-          # echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
+          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
           # echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> "${DEFCONFIG_PATH}"
           # echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> "${DEFCONFIG_PATH}"
           # echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> "${DEFCONFIG_PATH}"
