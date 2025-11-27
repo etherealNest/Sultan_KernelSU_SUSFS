@@ -79,7 +79,7 @@ jobs:
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
 
-          if [ "${{ inputs.ksu_type }}" != "suki-su" ]; then
+          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd susfs4ksu
             COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0"
             git checkout "$COMMIT"
