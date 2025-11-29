@@ -73,7 +73,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ksu_type: [ksu-next, 5ec1cff, suki-su]
+        ksu_type: [ksu-nextS, suki-su]
     uses: ./.github/workflows/sultan.yml
     secrets: inherit
     with:
