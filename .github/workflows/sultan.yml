@@ -126,6 +126,9 @@ jobs:
 
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd KernelSU-Next
+            echo "📃"
+            ls -la
+            echo "📃"
 
             echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
