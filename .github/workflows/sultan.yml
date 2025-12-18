@@ -90,7 +90,7 @@ jobs:
           cd "$CONFIG"
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             echo "  ➡️ Adding KernelSU..."
-            curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s stable
+            curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s dev
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             echo "  ➡️ Adding Suki-SU..."
             curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
@@ -130,7 +130,7 @@ jobs:
             ls -la
             echo "📃"
 
-            echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
+            echo "  ➡️ Применение Next-3.0.0-susfs-2.0.0-AIO.patch"
             cp ../../kernel_patches/wild/susfs_fix_patches/v2.0.0/*.patch ./
             patch -p1 < Next-3.0.0-susfs-2.0.0-AIO.patch
 
