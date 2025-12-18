@@ -130,28 +130,33 @@ jobs:
             ls -la
             echo "📃"
 
-            echo "  ➡️ Применение Next-3.0.0-susfs-2.0.0-AIO.patch"
-            cp ../../kernel_patches/wild/susfs_fix_patches/v2.0.0/*.patch ./
-            patch -p1 < Next-3.0.0-susfs-2.0.0-AIO.patch
+            echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+            patch -p1 < 10_enable_susfs_for_ksu.patch || true
+
+            cp ../../patch/ksu-next/*.patch ./
+            echo "  🛠️ Чиним то, что сломал предыдущий патч."
+
+            echo "  ➡️ Фикс fix_allowlist.c.patch"
+            patch -p1 < fix_allowlist.c.patch
+            echo "  ➡️ Фикс fix_apk_sign.c.patch"
+            patch -p1 < fix_apk_sign.c.patch
+            echo "  ➡️ Фикс fix_kernel_umount.c.patch"
+            patch -p1 < fix_kernel_umount.c.patch
+            echo "  ➡️ Фикс fix_ksu.c.patch"
+            patch -p1 < fix_ksu.c.patch
+            echo "  ➡️ Фикс fix_ksud.c.patch"
+            patch -p1 < fix_ksud.c.patch
+            echo "  ➡️ Фикс fix_Makefile.patch"
+            patch -p1 < fix_Makefile.patch
+            echo "  ➡️ Фикс fix_selinux.c.patch"
+            patch -p1 < fix_selinux.c.patch
+            echo "  ➡️ Фикс fix_sucompat.c.patch"
+            patch -p1 < fix_sucompat.c.patch
+            echo "  ➡️ Фикс fix_supercalls.c.patch"
+            patch -p1 < fix_supercalls.c.patch
+            
             cd ..
-
-            # echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
-            # cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            # patch -p1 < 10_enable_susfs_for_ksu.patch || true
-
-            # echo "  🛠️ Чиним то, что сломал предыдущий патч."
-            # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
-            # echo "  ➡️ Фикс fix_core_hook.c.patch"
-            # patch -p1 < fix_core_hook.c.patch
-
-            # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
-            # echo "  ➡️ Фикс fix_sucompat.c.patch"
-            # patch -p1 < fix_sucompat.c.patch
-
-            # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
-            # echo "  ➡️ Фикс fix_kernel_compat.c.patch"
-            # patch -p1 < fix_kernel_compat.c.patch
-            # cd ..
           elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             cd KernelSU
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
@@ -282,7 +287,7 @@ jobs:
           # SUSFS Configuration
           echo "# SUSFS Configuration" >> "${DEFCONFIG_PATH}"
           echo "CONFIG_KSU_SUSFS=y" >> "${DEFCONFIG_PATH}"
-          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> "${DEFCONFIG_PATH}"
+          echo "THREAD_INFO_IN_TASK=y" >> "${DEFCONFIG_PATH}"
         
           echo "  👁️ Showing updated defconfig:"
           cat "${DEFCONFIG_PATH}"
