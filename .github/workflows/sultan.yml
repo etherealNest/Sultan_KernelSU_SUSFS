@@ -139,8 +139,8 @@ jobs:
 
             echo "  ➡️ Фикс fix_allowlist.c.patch"
             patch -p1 < fix_allowlist.c.patch
-            echo "  ➡️ Фикс fix_apk_sign.c.patch"
-            patch -p1 < fix_apk_sign.c.patch
+            # echo "  ➡️ Фикс fix_apk_sign.c.patch"
+            # patch -p1 < fix_apk_sign.c.patch
             echo "  ➡️ Фикс fix_kernel_umount.c.patch"
             patch -p1 < fix_kernel_umount.c.patch
             echo "  ➡️ Фикс fix_ksu.c.patch"
@@ -155,7 +155,7 @@ jobs:
             patch -p1 < fix_sucompat.c.patch
             echo "  ➡️ Фикс fix_supercalls.c.patch"
             patch -p1 < fix_supercalls.c.patch
-            
+
             cd ..
           elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             cd KernelSU
