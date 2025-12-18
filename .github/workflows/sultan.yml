@@ -137,6 +137,26 @@ jobs:
             cp ../../patch/ksu-next/*.patch ./
             echo "  🛠️ Чиним то, что сломал предыдущий патч."
 
+          CHECKSUMS="492e74b5d9accf1f154c9fa169c81b3eb6f886b478e43574ff8753530edeb838 ./kernel/allowlist.c
+          80a36414db4266fa61da7efd6205326d25627d097cdd00938d95ead58c2515ea ./kernel/apk_sign.c
+          623a1cd3fce77124858b813169a91b4a60e3e2409b5501c7c8c06070480e933d ./kernel/ksud.c
+          8d430ea63e16fcb9cd0acfb720306b4c9c4e2033100bb5e28eaa441aa068a521 ./kernel/selinux/selinux.c
+          b001ce779d25e98dcd01fc8850e5f2d1e078cddf75928a61bfc0bb6f88796e0b ./kernel/sucompat.c
+          57388ad2cb272a85aa4ed0c621fec4c938214d88bc25dea12cf7c4ab760636f4 ./kernel/Makefile
+          85397314f04352986eb92188eab8498306581adae864f80dc5604ad58332da50 ./kernel/ksu.c
+          71033df2afbab5d7f72f5fdcbd150b1f4f7769460adcc6ebc4127e7340159f67 ./kernel/supercalls.c
+          f7b7917fd10815a4fab8013139363aede2422cdfc3e17858fde54cf2310b18c6 ./kernel/kernel_umount.c"
+
+          while read -r H F; do
+            [ -z "$F" ] && continue
+            if [ "$(sha256sum "$F" | awk '{print $1}')" = "$H" ]; then
+              echo "✅$F COINCIDENCE"
+            else
+              echo "❌$F MISCOVERY"
+              STATUS_SHA="ACHTUNG"
+            fi
+          done <<< "$CHECKSUMS"
+
             echo "  ➡️ Фикс fix_allowlist.c.patch"
             patch -p1 < fix_allowlist.c.patch
             # echo "  ➡️ Фикс fix_apk_sign.c.patch"
