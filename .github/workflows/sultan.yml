@@ -79,11 +79,11 @@ jobs:
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/${{ inputs.repo }}
 
-          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-            cd susfs4ksu
-            COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0"
-            git checkout "$COMMIT"
-          fi
+          # if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+          #   cd susfs4ksu
+          #   COMMIT="a162e2469d0b472545e5e46457eee171c0975fb0"
+          #   git checkout "$COMMIT"
+          # fi
 
       - name: Add KSU
         run: |
@@ -99,20 +99,20 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
           fi
 
-      - name: Apply Hooks Patches
-        run: |
-          cd "$CONFIG"
-          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-            cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
-            echo "  ➡️ Применение scope_min_manual_hooks_v1.4.patch"
-            patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
-          # elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
-          #   cp ../patch/manual_hooks_ksu.patch ./
-          #   echo "  ➡️ Применение manual_hooks_ksu.patch"
-          #   patch -p1 < manual_hooks_ksu.patch
-          elif [[ "${{ inputs.ksu_type }}" == "suki-su" || "${{ inputs.ksu_type }}" == "5ec1cff" ]]; then
-            echo "Пропуск добавления хуков ядра."
-          fi
+#      - name: Apply Hooks Patches
+#        run: |
+#          cd "$CONFIG"
+#          if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
+#            cp ../kernel_patches/wild/hooks/scope_min_manual_hooks_v1.4.patch ./
+#            echo "  ➡️ Применение scope_min_manual_hooks_v1.4.patch"
+#            patch -p1 --forward -F 3 < scope_min_manual_hooks_v1.4.patch
+#          # elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
+#          #   cp ../patch/manual_hooks_ksu.patch ./
+#          #   echo "  ➡️ Применение manual_hooks_ksu.patch"
+#          #   patch -p1 < manual_hooks_ksu.patch
+#          elif [[ "${{ inputs.ksu_type }}" == "suki-su" || "${{ inputs.ksu_type }}" == "5ec1cff" ]]; then
+#            echo "Пропуск добавления хуков ядра."
+#          fi
 
       - name: Apply SUSFS Patches
         run: |
@@ -131,22 +131,26 @@ jobs:
             echo "📃"
 
             echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            patch -p1 < 10_enable_susfs_for_ksu.patch || true
+            cp ../../kernel_patches/wild/susfs_fix_patches/v2.0.0/*.patch ./
+            patch -p1 < Next-3.0.0-susfs-2.0.0-AIO.patch
 
-            echo "  🛠️ Чиним то, что сломал предыдущий патч."
-            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
-            echo "  ➡️ Фикс fix_core_hook.c.patch"
-            patch -p1 < fix_core_hook.c.patch
+            # echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
+            # cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+            # patch -p1 < 10_enable_susfs_for_ksu.patch || true
 
-            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
-            echo "  ➡️ Фикс fix_sucompat.c.patch"
-            patch -p1 < fix_sucompat.c.patch
+            # echo "  🛠️ Чиним то, что сломал предыдущий патч."
+            # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_core_hook.c.patch ./
+            # echo "  ➡️ Фикс fix_core_hook.c.patch"
+            # patch -p1 < fix_core_hook.c.patch
 
-            cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
-            echo "  ➡️ Фикс fix_kernel_compat.c.patch"
-            patch -p1 < fix_kernel_compat.c.patch
-            cd ..
+            # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_sucompat.c.patch ./
+            # echo "  ➡️ Фикс fix_sucompat.c.patch"
+            # patch -p1 < fix_sucompat.c.patch
+
+            # cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/fix_kernel_compat.c.patch ./
+            # echo "  ➡️ Фикс fix_kernel_compat.c.patch"
+            # patch -p1 < fix_kernel_compat.c.patch
+            # cd ..
           elif [ "${{ inputs.ksu_type }}" == "5ec1cff" ]; then
             cd KernelSU
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
