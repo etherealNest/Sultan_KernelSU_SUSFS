@@ -133,6 +133,7 @@ jobs:
             echo "  ➡️ Применение Next-3.0.0-susfs-2.0.0-AIO.patch"
             cp ../../kernel_patches/wild/susfs_fix_patches/v2.0.0/*.patch ./
             patch -p1 < Next-3.0.0-susfs-2.0.0-AIO.patch
+            cd ..
 
             # echo "  ➡️ Применение 10_enable_susfs_for_ksu.patch"
             # cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
