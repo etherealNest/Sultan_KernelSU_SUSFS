@@ -1,0 +1,15 @@
+diff --git a/kernel/setuid_hook.c b/kernel/setuid_hook.c
+index 2985346a..c0c3bc8e 100644
+--- a/kernel/setuid_hook.c
++++ b/kernel/setuid_hook.c
+@@ -28,6 +28,10 @@
+ #include <linux/uidgid.h>
+ #include <linux/version.h>
+ 
++#ifdef CONFIG_KSU_SUSFS
++#include <linux/susfs.h>
++#endif // #ifdef CONFIG_KSU_SUSFS
++
+ #include "allowlist.h"
+ #include "setuid_hook.h"
+ #include "feature.h"
