@@ -183,7 +183,7 @@ jobs:
         run: |
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd "$CONFIG/KernelSU-Next/kernel"
-            BASE_VERSION=10200
+            BASE_VERSION=30000
             COMMIT_COUNT=$(/usr/bin/git rev-list --count HEAD)
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             cd "$CONFIG/KernelSU/kernel"

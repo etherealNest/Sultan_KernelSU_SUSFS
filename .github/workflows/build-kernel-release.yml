@@ -104,14 +104,9 @@ jobs:
           -> https://github.com/fatalcoder524/KernelFlasher/tree/v1.6.0
         
         Features:
-        [+] There are two options to choose from:
-          -> SukiSU Ultra *temporarily unavailable
-          -> KernelSU Next
-          -> 5ec1cff
-        [+] SUSFS v1.5.12
+        [+] KernelSU Next 3.0.0
+        [+] SUSFS v2.0.0
         [+] Built-in Baseband-guard
-        [+] Built-in Manual hooks
-        [+] Magic Mount
     steps:
       # Checkout the code
       - name: Checkout code
