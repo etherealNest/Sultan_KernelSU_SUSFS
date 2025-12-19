@@ -118,7 +118,8 @@ jobs:
               echo "✅$F COINCIDENCE"
             else
               echo "❌$F MISCOVERY"
-              STATUS_SHA="ACHTUNG"
+              STATUS_SHA="dirty"
+              echo "STATUS_SHA=$STATUS_SHA" >> $GITHUB_ENV
             fi
           done <<< "$CHECKSUMS"
 
@@ -361,14 +362,14 @@ jobs:
       - name: Upload AK3.zip
         uses: actions/upload-artifact@v4
         with:
-          name: AK3-${{ inputs.codename }}-${{ inputs.ksu_type }}
+          name: AK3-${{ inputs.codename }}-${{ inputs.ksu_type }}${{ env.STATUS_SHA }}
           path: |
             *.zip
 
       - name: Upload img's
         uses: actions/upload-artifact@v4
         with:
-          name: flashable-img-${{ inputs.codename }}-${{ inputs.ksu_type }}
+          name: flashable-img-${{ inputs.codename }}-${{ inputs.ksu_type }}${{ env.STATUS_SHA }}
           path: |
             *.img
 
