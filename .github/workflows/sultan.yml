@@ -140,10 +140,11 @@ jobs:
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           if [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
-            cd KernelSU
-            sed -i -e 's/^\(#define EXPECTED_SIZE_NEKO\s\+\).*/\1916/' \
-                     -e 's/^\(#define EXPECTED_HASH_NEKO\s\+\).*/\1"a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af"/' \
-                     kernel/manager_sign.h
+            echo "temporär überspringen"
+            # cd KernelSU
+            # sed -i -e 's/^\(#define EXPECTED_SIZE_NEKO\s\+\).*/\1916/' \
+            #          -e 's/^\(#define EXPECTED_HASH_NEKO\s\+\).*/\1"a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af"/' \
+            #          kernel/manager_sign.h
           elif [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             echo "Dies wurde bereits bei der Anwendung von fix_apk_sign getan.c.patch"
           fi
