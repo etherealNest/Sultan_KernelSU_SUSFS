@@ -243,6 +243,9 @@ jobs:
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           patch -p1 < $GITHUB_WORKSPACE/HymoFS/patch/hymofs_with_susfs.patch
+          cat >> "${{ env.DEFCONFIG_PATH }}" << 'EOF'
+          CONFIG_HYMOFS=y
+          EOF
 
       - name: Anwenden von Leistungspatches
         run: |
