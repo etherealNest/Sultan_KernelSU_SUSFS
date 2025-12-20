@@ -52,6 +52,7 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android14-6.1"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/android_kernel_google_zuma --depth=1
+          git clone https://github.com/Anatdx/HymoFS
 
       - name: KSU fügen hinzu
         run: |
@@ -237,6 +238,11 @@ jobs:
 
           # Removing defconfig check
           sed -i 's/check_defconfig//' ./build.config.gki
+
+      - name: HymoFS
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+          patch -p1 < $GITHUB_WORKSPACE/HymoFS/patch/hymofs_with_susfs.patch
 
       - name: Anwenden von Leistungspatches
         run: |
