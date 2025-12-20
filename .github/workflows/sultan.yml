@@ -43,7 +43,7 @@ jobs:
         run: |
           cat >> $GITHUB_ENV << EOF
           KERNEL_ROOT=$GITHUB_WORKSPACE/android_kernel_google_zuma
-          DEFCONFIG_PATH="$GITHUB_WORKSPACE/android_kernel_google_zuma/arch${{ env.DEFCONFIG_PATH }}
+          DEFCONFIG_PATH="$GITHUB_WORKSPACE/android_kernel_google_zuma/arch/arm64/configs/zuma_defconfig"
           EOF
 
       - name: Klonen AnyKernel3 und andere Abhängigkeiten
@@ -172,7 +172,7 @@ jobs:
 
           echo "Kernel version detected: ${KERNEL_VER}"
 
-      - name: BBG hinzufügen
+      - name: BBG fügen hinzu
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
