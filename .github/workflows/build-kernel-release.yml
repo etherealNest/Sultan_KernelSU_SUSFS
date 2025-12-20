@@ -49,7 +49,6 @@ on:
         options:
           - ksu-next
           - suki-su
-          - 5ec1cff
         default: 'ksu-next'
       create_release:
         description: 'Create a release after matrix build?'
@@ -92,7 +91,7 @@ jobs:
       REPO_OWNER: ${{ github.repository_owner }}
       REPO_NAME: Sultan_KernelSU_SUSFS
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      RELEASE_NAME: "Pixel 8 Sultan Kernels With KernelSU Next and SukiSU Ultra & SUSFS v1.5.12"
+      RELEASE_NAME: "Pixel 8 Sultan Kernels With KernelSU Next and SukiSU Ultra & SUSFS v2.0.0"
       RELEASE_NOTES: |       
         ⚠️ **COMPATIBILITY NOTICE** ⚠️
         Please ensure compatibility by comparing release dates with official Sultan kernel releases

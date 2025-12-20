@@ -1,6 +1,0 @@
-# 5ec1cff Configuration
-CONFIG_KSU=y
-
-# CONFIG_KPROBES is not set
-# CONFIG_HAVE_KPROBES is not set
-# CONFIG_KPROBE_EVENTS is not set
