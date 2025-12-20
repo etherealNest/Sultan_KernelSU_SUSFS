@@ -244,7 +244,7 @@ jobs:
         run: |
           patch -p1 < $GITHUB_WORKSPACE/HymoFS/patch/hymofs_with_susfs.patch | true
           echo "  ➡️ Korrigieren fix_Makefile.patch"
-          patch -p1 < $GITHUB_WORKSPACE/patch/hymofs/fix_Makefile.patch
+          patch -p1 < $GITHUB_WORKSPACE/patches/hymofs/fix_Makefile.patch
           cat >> "${{ env.DEFCONFIG_PATH }}" << 'EOF'
           CONFIG_HYMOFS=y
           EOF
