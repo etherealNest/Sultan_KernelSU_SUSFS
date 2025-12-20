@@ -1,0 +1,48 @@
+name: Getting stock images
+
+on:
+  workflow_dispatch:
+    inputs:
+      stock_ota:
+        description: "Stock Full OTA file to download"
+        required: false
+        default: "shiba-bp3a.250905.014-factory-f927be20.zip"
+
+permissions:
+  contents: write
+  actions: write 
+
+jobs:
+  build-pixel-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: sudo apt-get update && sudo apt-get install -y wget unzip
+
+      - name: Download and Extract Stock Images
+        run: |
+          set -e
+          # URL для скачивания прошивки
+          DOWN_URL="https://dl.google.com/dl/android/aosp/"
+
+          # Скачиваем прошивку
+          wget --progress=dot:mega "${DOWN_URL}${{ inputs.stock_ota }}" -O stock_ota.zip
+          echo "Stock firmware downloaded"
+
+          # Извлекаем boot.img и vendor_kernel_boot.img
+          mkdir -p extracted_imgs
+          unzip -o "stock_ota.zip" '*.zip' -d firmware
+          INNER_ZIP=$(find firmware -type f -name '*.zip' | head -n1)
+          unzip -o "$INNER_ZIP" 'boot.img' 'vendor_kernel_boot.img' -d extracted_imgs
+          
+          echo "Images extracted: boot.img and vendor_kernel_boot.img"
+
+      - name: Upload Images as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-images
+          path: extracted_imgs

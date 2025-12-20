@@ -1,0 +1,37 @@
+name: Getting magiskboot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write 
+
+jobs:
+  build-pixel-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download and Extract magiskboot
+        run: |
+          set -e
+          MKDIR="Prebuilds"
+          mkdir -p "$MKDIR" magisk_unzip
+          # Получаем список релизов (включая prerelease) и берём первый
+          URL=$(curl -s https://api.github.com/repos/topjohnwu/Magisk/releases \
+            | jq -r '.[0].assets[] | select(.name|test("^Magisk.*\\.apk$")) | .browser_download_url')
+          curl -sL "$URL" -o magisk.apk
+          # Извлечение только libmagiskboot.so из соответствующей архитектуры
+          unzip -q magisk.apk "lib/x86_64/libmagiskboot.so" -d magisk_unzip
+          cp magisk_unzip/lib/x86_64/libmagiskboot.so "$MKDIR/magiskboot"
+          chmod +x "$MKDIR/magiskboot"
+          echo "magiskboot downloaded to $MKDIR/magiskboot"
+          rm -rf magisk.apk magisk_unzip
+      - name: Upload Magiskboot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: magiskboot
+          path: Prebuilds/magiskboot

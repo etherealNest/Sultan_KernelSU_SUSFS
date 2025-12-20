@@ -39,24 +39,21 @@ jobs:
           tar -xf x86_64-gcc-14.2.0-nolibc-aarch64-linux.tar
           echo "GCC 14.2.0 toolchain extracted successfully"
 
-      - name: Set CONFIG Environment Variable
+      - name: Umgebungsvariable setzen
         run: |
           cat >> $GITHUB_ENV << EOF
           KERNEL_ROOT=$GITHUB_WORKSPACE/android_kernel_google_zuma
-          DEFCONFIG_PATH="$GITHUB_WORKSPACE/android_kernel_google_zuma/arch/arm64/configs/zuma_defconfig"
+          DEFCONFIG_PATH="$GITHUB_WORKSPACE/android_kernel_google_zuma/arch${{ env.DEFCONFIG_PATH }}
           EOF
 
-      - name: Clone AnyKernel3 and Other Dependencies
+      - name: Klonen AnyKernel3 und andere Abhängigkeiten
         run: |
-          echo "Cloning AnyKernel3 and other dependencies..."
-
-          # Clone repositories using the branch names
           git clone https://github.com/TheWildJames/AnyKernel3.git -b "sultan-zuma"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "gki-android14-6.1"
           git clone https://github.com/TheWildJames/kernel_patches.git
           git clone https://github.com/kerneltoast/android_kernel_google_zuma --depth=1
 
-      - name: KSU hinzufügen
+      - name: KSU fügen hinzu
         run: |
           cd "${{ env.KERNEL_ROOT }}"
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
@@ -83,9 +80,7 @@ jobs:
             cp $GITHUB_WORKSPACE/susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
 
-            cp $GITHUB_WORKSPACE/patch/ksu-next/*.patch ./
-            echo "  🛠️ Wir reparieren, was den vorherigen Patch gebrochen hat. "
-
+          # Verifying file hashes before applying further patches
           CHECKSUMS="492e74b5d9accf1f154c9fa169c81b3eb6f886b478e43574ff8753530edeb838  ./kernel/allowlist.c
           80a36414db4266fa61da7efd6205326d25627d097cdd00938d95ead58c2515ea  ./kernel/apk_sign.c
           623a1cd3fce77124858b813169a91b4a60e3e2409b5501c7c8c06070480e933d  ./kernel/ksud.c
@@ -108,25 +103,28 @@ jobs:
             fi
           done <<< "$CHECKSUMS"
 
-            echo "  ➡️ Fix fix_allowlist.c.patch"
+            echo "  🛠️ Wir reparieren, was den vorherigen Patch gebrochen hat. "
+            cp $GITHUB_WORKSPACE/patches/ksu-next_susfs-v2.0.0/*.patch ./
+
+            echo "  ➡️ Korrigieren fix_allowlist.c.patch"
             patch -p1 < fix_allowlist.c.patch
-            # echo "  ➡️ Fix fix_apk_sign.c.patch"
-            # patch -p1 < fix_apk_sign.c.patch
-            echo "  ➡️ Fix fix_kernel_umount.c.patch"
+            echo "  ➡️ Korrigieren fix_apk_sign.c.patch"
+            patch -p1 < fix_apk_sign.c.patch
+            echo "  ➡️ Korrigieren fix_kernel_umount.c.patch"
             patch -p1 < fix_kernel_umount.c.patch
-            echo "  ➡️ Fix fix_ksu.c.patch"
+            echo "  ➡️ Korrigieren fix_ksu.c.patch"
             patch -p1 < fix_ksu.c.patch
-            echo "  ➡️ Fix fix_ksud.c.patch"
+            echo "  ➡️ Korrigieren fix_ksud.c.patch"
             patch -p1 < fix_ksud.c.patch
-            echo "  ➡️ Fix fix_Makefile.patch"
+            echo "  ➡️ Korrigieren fix_Makefile.patch"
             patch -p1 < fix_Makefile.patch
-            echo "  ➡️ Fix fix_selinux.c.patch"
+            echo "  ➡️ Korrigieren fix_selinux.c.patch"
             patch -p1 < fix_selinux.c.patch
-            echo "  ➡️ Fix fix_setuid_hook.c.patch"
+            echo "  ➡️ Korrigieren fix_setuid_hook.c.patch"
             patch -p1 < fix_setuid_hook.c.patch
-            echo "  ➡️ Fix fix_sucompat.c.patch"
+            echo "  ➡️ Korrigieren fix_sucompat.c.patch"
             patch -p1 < fix_sucompat.c.patch
-            echo "  ➡️ Fix fix_supercalls.c.patch"
+            echo "  ➡️ Korrigieren fix_supercalls.c.patch"
             patch -p1 < fix_supercalls.c.patch
 
             cd ..
@@ -135,10 +133,10 @@ jobs:
           echo "  ➡️ Anwendung 50_add_susfs_in_gki-android14-6.1.patch"
           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
           echo "  🛠️ Wir reparieren, was den vorherigen Patch gebrochen hat."
-          echo "  ➡️ Fix sys.c_fix.patch"
+          echo "  ➡️ Korrigieren sys.c_fix.patch"
           patch -p1 --fuzz=3 < sys.c_fix.patch
 
-      - name: Adding your own signature
+      - name: Eigene Signatur fügen hinzu
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           if [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
@@ -147,19 +145,16 @@ jobs:
                      -e 's/^\(#define EXPECTED_HASH_NEKO\s\+\).*/\1"a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af"/' \
                      kernel/manager_sign.h
           elif [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-            echo "Missing a patch..."
-            # cd KernelSU-Next
-            # cp $GITHUB_WORKSPACE/patch/fix_apk_sign.c.ksu-next.patch ./
-            # patch -p1 < fix_apk_sign.c.ksu-next.patch
+            echo "Dies wurde bereits bei der Anwendung von fix_apk_sign getan.c.patch"
           fi
 
-      - name: Getting KernelSU Version
+      - name: KernelSU-Version ermitteln
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             cd "KernelSU-Next/kernel"
             BASE_VERSION=30000
-            COMMIT_COUNT=$(/usr/bin/git rev-list --count HEAD)
+            COMMIT_COUNT=$(/usr/bin/git rev-list --count origin/dev)
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             cd "KernelSU/kernel"
             BASE_VERSION=10700
@@ -169,7 +164,7 @@ jobs:
           KSU_VERSION=$(expr $COMMIT_COUNT "+" $BASE_VERSION)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
 
-      - name: Verify Kernel Version
+      - name: Überprüfen der Kernel-Version
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           KERNEL_VER=$(sed -n '2,4p' Makefile | grep -oE '[0-9]+' | paste -sd '.')
@@ -177,21 +172,20 @@ jobs:
 
           echo "Kernel version detected: ${KERNEL_VER}"
 
-      - name: Add BBG
+      - name: BBG hinzufügen
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
-          echo "Adding BBG..."
           wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
-          echo "CONFIG_BBG=y" >> ./arch/arm64/configs/zuma_defconfig
+          echo "CONFIG_BBG=y" >> ${{ env.DEFCONFIG_PATH }}
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
 
-      - name: Configure Kernel Options
+      - name: Kernel-Optionen konfigurieren
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
-            cat $GITHUB_WORKSPACE/bash/kernelsu-next >> "${{ env.DEFCONFIG_PATH }}"
+            cat $GITHUB_WORKSPACE/defconfigs/ksu-next >> "${{ env.DEFCONFIG_PATH }}"
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
-            cat $GITHUB_WORKSPACE/bash/suki-su >> "${{ env.DEFCONFIG_PATH }}"
+            cat $GITHUB_WORKSPACE/defconfigs/suki-su >> "${{ env.DEFCONFIG_PATH }}"
           fi
 
           cat >> "${{ env.DEFCONFIG_PATH }}" << 'EOF'
@@ -243,7 +237,7 @@ jobs:
           # Removing defconfig check
           sed -i 's/check_defconfig//' ./build.config.gki
 
-      - name: Apply Performance Patches
+      - name: Anwenden von Leistungspatches
         run: |
           cd "${{ env.KERNEL_ROOT }}"
           cp "../kernel_patches/common/optimized_mem_operations.patch" ./
@@ -259,36 +253,35 @@ jobs:
 #      - name: Start VS Code
 #        uses: fawazahmed0/action-debug-vscode@main
 
-      - name: Changing the name to stock
+      - name: Änderung des Namens in standart
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
-          # Removing the dirty label
+          # Removing the "dirty" label
           sed -i "s/printf '%s' -dirty/printf '%s'/" scripts/setlocalversion
           sed -i 's/android_release=/android_release="android14-6.1"/' scripts/setlocalversion
-          sed -i 's/# CONFIG_LOCALVERSION_AUTO is not set/CONFIG_LOCALVERSION_AUTO=y/' arch/arm64/configs/zuma_defconfig
-          sed -i '/CONFIG_LOCALVERSION="-Sultan"/d' arch/arm64/configs/zuma_defconfig
+          sed -i 's/# CONFIG_LOCALVERSION_AUTO is not set/CONFIG_LOCALVERSION_AUTO=y/' ${{ env.DEFCONFIG_PATH }}
+          sed -i '/CONFIG_LOCALVERSION="-Sultan"/d' ${{ env.DEFCONFIG_PATH }}
 
-      - name: Build the Kernel
+      - name: Das Kernel bauen
         run: |
           cd "${{ env.KERNEL_ROOT }}"
           
           # Disable the generation of a fatal error when making warnings.
-          echo "# CONFIG_WERROR is not set" >> "./arch/arm64/configs/zuma_defconfig"
+          echo "# CONFIG_WERROR is not set" >> "${{ env.DEFCONFIG_PATH }}"
 
           make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all) zuma_defconfig
           make CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux- CC=$GITHUB_WORKSPACE/gcc-14.2.0-nolibc/aarch64-linux/bin/aarch64-linux-gcc -j$(nproc --all)
 
-      - name: Copy Images
+      - name: Images kopieren
+        working-directory: ${{ env.KERNEL_ROOT }}
         run: |
-          cd "${{ env.KERNEL_ROOT }}"
-
-          echo "  Copying Image.lz4 and concatenating DTB files..."
+          # Copying Image.lz4 and concatenating DTB files
           cp ./out/arch/arm64/boot/Image.lz4 ../AnyKernel3/Image.lz4
           if [ "zuma" == "zuma" ]; then
             cat ./out/google-devices/zuma/dts/*.dtb > ../AnyKernel3/dtb
           fi
 
-      - name: Create ZIP Files for Different Formats
+      - name: ZIP-Dateien erstellen
         run: |
           cd ./AnyKernel3
 
@@ -297,20 +290,20 @@ jobs:
           echo "Creating zip file $ZIP_NAME..."
           zip -r "../$ZIP_NAME" ./*
 
-      - name: Create boot.img
+      - name: boot.img erstellen
         run: |
           set -x
-          MAGISKBOOT=$GITHUB_WORKSPACE/Prebuilds/magiskboot_v30.2
+          MAGISKBOOT=$GITHUB_WORKSPACE/prebuilds/magiskboot_v30.2
           chmod +x "$MAGISKBOOT"
-          BOOTIMG=$GITHUB_WORKSPACE/Prebuilds/boot.img
-          VENDOR=$GITHUB_WORKSPACE/Prebuilds/vendor_kernel_boot.img
+          BOOTIMG=$GITHUB_WORKSPACE/prebuilds/boot.img
+          VENDOR=$GITHUB_WORKSPACE/prebuilds/vendor_kernel_boot.img
           TMP_DIR=tmp_dir
           mkdir "${TMP_DIR}"
 
           BOOT_NAME="${KERNEL_VER}-zuma-${{ inputs.ksu_type }}-v${{ env.KSUVER }}-boot.img"
           VENDOR_BOOT_NAME="${KERNEL_VER}-zuma-${{ inputs.ksu_type }}-v${{ env.KSUVER }}-vendor_kernel_boot.img"
 
-          unzip $GITHUB_WORKSPACE/Prebuilds/stock_img_shusky.zip -d $GITHUB_WORKSPACE/Prebuilds/
+          unzip $GITHUB_WORKSPACE/prebuilds/stock_img_shusky.zip -d $GITHUB_WORKSPACE/prebuilds/
 
           cp ${{ env.KERNEL_ROOT }}/out/arch/arm64/boot/Image.lz4 ./
           cat ${{ env.KERNEL_ROOT }}/out/google-devices/zuma/dts/*.dtb > dtb
@@ -324,14 +317,14 @@ jobs:
           cp ../dtb dtb
           "$MAGISKBOOT" repack "$VENDOR" ../$VENDOR_BOOT_NAME
           
-      - name: Upload AK3.zip
+      - name: AK3.zip laden hoch
         uses: actions/upload-artifact@v4
         with:
           name: AK3-zuma-${{ inputs.ksu_type }}${{ env.STATUS_SHA }}
           path: |
             *.zip
 
-      - name: Upload img's
+      - name: img's laden hoch
         uses: actions/upload-artifact@v4
         with:
           name: flashable-img-zuma-${{ inputs.ksu_type }}${{ env.STATUS_SHA }}
@@ -364,7 +357,7 @@ jobs:
             done
           fi
 
-      - name: Extra Artifacts
+      - name: Zusätzliche Artefakte
         if: ${{ always() }}
         id: upload_misc
         uses: actions/upload-artifact@v4

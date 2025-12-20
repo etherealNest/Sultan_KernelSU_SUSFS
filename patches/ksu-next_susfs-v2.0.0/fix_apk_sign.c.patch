@@ -9,8 +9,8 @@ index 3f9e3a21..16655812 100644
 +#ifndef CONFIG_KSU_SUSFS
  	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH);
 +#else
-+    return (check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH) ||
-+            check_v2_signature(path, 384, "7e0c6d7278a3bb8e364e0fcba95afaf3666cf5ff3c245a3b63c8833bd0445cc4")); // 5ec1cff
++    return (check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH) ||
++            check_v2_signature(path, 916, "a72f1296cd4b30901e9c57858d5ce185339e3dde7a91b41a0f2cdf39ffde45af"));
 +#endif // #ifndef CONFIG_KSU_SUSFS
  }
 \ No newline at end of file
