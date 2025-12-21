@@ -242,6 +242,7 @@ jobs:
       - name: HymoFS
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
+          set -x
           patch -p1 < $GITHUB_WORKSPACE/HymoFS/patch/hymofs_with_susfs.patch | true
           echo "  ➡️ Korrigieren fix_Makefile.patch"
           patch -p1 < $GITHUB_WORKSPACE/patches/hymofs/fix_Makefile.patch
