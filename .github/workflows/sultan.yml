@@ -55,8 +55,8 @@ jobs:
           git clone https://github.com/Anatdx/HymoFS -b "android14_6.1"
 
       - name: KSU fügen hinzu
+        working-directory: ${{ env.KERNEL_ROOT }}
         run: |
-          cd "${{ env.KERNEL_ROOT }}"
           if [ "${{ inputs.ksu_type }}" == "ksu-next" ]; then
             echo "  ➡️ Hinzufüngen KernelSU..."
             curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s dev
@@ -159,7 +159,7 @@ jobs:
             COMMIT_COUNT=$(/usr/bin/git rev-list --count origin/dev)
           elif [ "${{ inputs.ksu_type }}" == "suki-su" ]; then
             cd "KernelSU/kernel"
-            BASE_VERSION=10700
+            BASE_VERSION=37185
             COMMIT_COUNT=$(/usr/bin/git rev-list --count origin/HEAD)
           fi
 

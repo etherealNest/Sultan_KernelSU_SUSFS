@@ -95,7 +95,8 @@ jobs:
       RELEASE_NOTES: |       
         ⚠️ **COMPATIBILITY NOTICE** ⚠️
         Please ensure compatibility by comparing release dates with official Sultan kernel releases
-        
+        SukiSU is currently much less stable compared to KernelSU Next
+
         Module: 
           -> https://github.com/sidex15/ksu_module_susfs
         
@@ -106,6 +107,8 @@ jobs:
         [+] KernelSU Next 3.0.0
         [+] SUSFS v2.0.0
         [+] Built-in Baseband-guard
+        
+        ⚠️SukiSU is currently much less stable compared to KernelSU Next⚠️
     steps:
       # Checkout the code
       - name: Checkout code
