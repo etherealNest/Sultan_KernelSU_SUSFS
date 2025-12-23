@@ -87,10 +87,9 @@ jobs:
           623a1cd3fce77124858b813169a91b4a60e3e2409b5501c7c8c06070480e933d  ./kernel/ksud.c
           8d430ea63e16fcb9cd0acfb720306b4c9c4e2033100bb5e28eaa441aa068a521  ./kernel/selinux/selinux.c
           b001ce779d25e98dcd01fc8850e5f2d1e078cddf75928a61bfc0bb6f88796e0b  ./kernel/sucompat.c
-          cc05d793e83d6b372005474e075b6ac3b2b4207fc0da4feecca9447b0295bf5d  ./kernel/setuid_hook.c
           57388ad2cb272a85aa4ed0c621fec4c938214d88bc25dea12cf7c4ab760636f4  ./kernel/Makefile
-          85397314f04352986eb92188eab8498306581adae864f80dc5604ad58332da50  ./kernel/ksu.c
-          71033df2afbab5d7f72f5fdcbd150b1f4f7769460adcc6ebc4127e7340159f67  ./kernel/supercalls.c
+          689204600e10cfee2eb1f01d9d430877071c8e01cd26a4e624657762b758d21b  ./kernel/ksu.c
+          8d66cdb9d1cc4b9c76c92268b1d8674feb218b76a887e104742dbfe5456a5ea6  ./kernel/supercalls.c
           f7b7917fd10815a4fab8013139363aede2422cdfc3e17858fde54cf2310b18c6  ./kernel/kernel_umount.c"
 
           while read -r H F; do
