@@ -120,8 +120,6 @@ jobs:
             patch -p1 < fix_Makefile.patch
             echo "  ➡️ Korrigieren fix_selinux.c.patch"
             patch -p1 < fix_selinux.c.patch
-            echo "  ➡️ Korrigieren fix_setuid_hook.c.patch"
-            patch -p1 < fix_setuid_hook.c.patch
             echo "  ➡️ Korrigieren fix_sucompat.c.patch"
             patch -p1 < fix_sucompat.c.patch
             echo "  ➡️ Korrigieren fix_supercalls.c.patch"
